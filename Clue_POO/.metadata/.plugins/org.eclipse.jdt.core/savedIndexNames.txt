@@ -1,0 +1,1 @@
+INDEX VERSION 1.131+C:\Users\e2210608\eclipse-workspace\Clue_POO\.metadata\.plugins\org.eclipse.jdt.core

@@ -1,0 +1,2 @@
+module Clue_POO {
+}
