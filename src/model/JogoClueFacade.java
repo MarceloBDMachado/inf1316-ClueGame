@@ -5,9 +5,8 @@ import java.util.*;
 public class JogoClueFacade {
     private Dado dado1;
     private Dado dado2;
-    private Tabuleiro tabuleiro; // Integrando o Tabuleiro
+    private Tabuleiro tabuleiro;
 
-    // Atualizado de Object para Piao e mantendo o uso de HashMap exigido
     private Map<String, Piao> pioes;
     private Map<String, Carta> baralho;
     private Map<Integer, List<Carta>> maosJogadores;
@@ -23,20 +22,13 @@ public class JogoClueFacade {
         this.envelopeConfidencial = new Envelope();
 
         inicializarCartas();
-        inicializarPioes(); // Novo método para colocar os personagens no mapa
+        inicializarPioes();
     }
 
-    /**
-     * Requisito 2: Lançamento virtual dos dados
-     */
     public int[] rolarDados() {
         return new int[]{dado1.rolar(), dado2.rolar()};
     }
 
-    /**
-     * Requisito 3: Mapear todas as casas que podem ser alcançadas com o valor dos dados.
-     * @return Uma lista de objetos Casa válidos para o movimento.
-     */
     public List<Casa> mapearCasasPossiveis(String nomeSuspeito, int valorDados) {
         Piao piao = pioes.get(nomeSuspeito);
         if (piao == null || piao.getPosicaoAtual() == null) {
@@ -45,9 +37,6 @@ public class JogoClueFacade {
         return tabuleiro.mapearCasasAlcancaveis(piao.getPosicaoAtual(), valorDados);
     }
 
-    /**
-     * Requisito 4: Executa o deslocamento do pião para a coordenada escolhida.
-     */
     public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino) {
         Piao piao = pioes.get(nomeSuspeito);
         Casa destino = tabuleiro.getCasa(xDestino, yDestino);
@@ -58,12 +47,9 @@ public class JogoClueFacade {
         return false;
     }
 
-    /**
-     * Requisito 1: Preparação do jogo (Itens 4, 5, 6 e 7 do manual)
-     */
     public void prepararPartida(int numJogadores) {
         if(numJogadores < 3 || numJogadores > 6) {
-            throw new IllegalArgumentException("O jogo deve ter entre 3 e 6 jogadores.");
+            throw new IllegalArgumentException("número de jogadores inválido");
         }
 
         List<Carta> suspeitos = new ArrayList<>();
@@ -107,9 +93,6 @@ public class JogoClueFacade {
         }
     }
 
-    /**
-     * Cadastra todas as cartas do jogo no HashMap interno usando as traduções do colega.
-     */
     private void inicializarCartas() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
@@ -120,13 +103,8 @@ public class JogoClueFacade {
         for (String c : nomesComodos) baralho.put(c, new Carta(c, TipoCarta.COMODO));
     }
 
-    /**
-     * Posiciona os piões em coordenadas iniciais no tabuleiro para os testes da 1ª iteração.
-     */
     private void inicializarPioes() {
-        // Atualizado para bater com as cartas do colega
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
-        // Coordenadas iniciais fictícias para teste (baseadas em um tabuleiro 25x24)
         int[][] posicoesIniciais = {{0,7}, {0,16}, {7,0}, {18,0}, {24,7}, {24,16}};
 
         for (int i = 0; i < nomesSuspeitos.length; i++) {
@@ -138,7 +116,6 @@ public class JogoClueFacade {
         }
     }
 
-    // --- MÉTODOS DE ACESSO PARA TESTES (Package-Private) ---
     
     Map<Integer, List<Carta>> getMaosJogadores() {
         return maosJogadores;

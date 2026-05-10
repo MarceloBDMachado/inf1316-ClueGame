@@ -9,7 +9,6 @@ class Dado {
         this.gerador = new Random();
     }
 
-    // Retorna um valor entre 1 e 6
     int rolar() {
         return gerador.nextInt(6) + 1;
     }

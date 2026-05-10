@@ -4,8 +4,8 @@ class Casa {
     private final int x;
     private final int y;
     private final TipoCasa tipo;
-    private String nomeComodo; // Nulo se for corredor ou inacessível
-    private Piao piaoOcupante; // Nulo se estiver vazia
+    private String nomeComodo;
+    private Piao piaoOcupante;
 
     Casa(int x, int y, TipoCasa tipo) {
         this.x = x;

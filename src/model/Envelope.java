@@ -10,7 +10,4 @@ class Envelope {
         this.crimeArma = arma;
         this.crimeComodo = comodo;
     }
-
-    // Os métodos para revelar a solução serão criados futuramente
-    // quando implementarmos a lógica de "Acusação Final".
 }
