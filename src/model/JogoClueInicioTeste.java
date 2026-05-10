@@ -7,11 +7,11 @@ import static org.junit.Assert.*;
 
 public class JogoClueInicioTeste {
 
-    private JogoClueFacade jogo;
+    private JogoClueInicio jogo;
 
     @Before
     public void setUp() {
-        jogo = new JogoClueFacade();
+        jogo = new JogoClueInicio();
     }
 
     @Test
