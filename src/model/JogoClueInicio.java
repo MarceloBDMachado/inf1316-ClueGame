@@ -2,7 +2,9 @@ package model;
 
 import java.util.*;
 
-public class JogoClueFacade {
+
+// Inicializa o inicio do Jogo
+public class JogoClueInicio {
     private Dado dado1;
     private Dado dado2;
     private Tabuleiro tabuleiro;
@@ -12,6 +14,7 @@ public class JogoClueFacade {
     private Map<Integer, List<Carta>> maosJogadores;
     private Envelope envelopeConfidencial;
 
+    // Inicializa todas as diferentes funcionalidades para o Jogo
     public JogoClueFacade() {
         this.dado1 = new Dado();
         this.dado2 = new Dado();
@@ -25,10 +28,12 @@ public class JogoClueFacade {
         inicializarPioes();
     }
 
+    // função simples para sempre girar os dois dados ao mesmo tempo
     public int[] rolarDados() {
         return new int[]{dado1.rolar(), dado2.rolar()};
     }
 
+    // no começo do jogo da um nome de um suspeito para cada um dos piões
     public List<Casa> mapearCasasPossiveis(String nomeSuspeito, int valorDados) {
         Piao piao = pioes.get(nomeSuspeito);
         if (piao == null || piao.getPosicaoAtual() == null) {
