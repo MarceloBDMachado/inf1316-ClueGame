@@ -15,7 +15,7 @@ public class JogoClueInicio {
     private Envelope envelopeConfidencial;
 
     // Inicializa todas as diferentes funcionalidades para o Jogo
-    public JogoClueFacade() {
+    public JogoClueInicio() {
         this.dado1 = new Dado();
         this.dado2 = new Dado();
         this.tabuleiro = new Tabuleiro();
@@ -34,6 +34,7 @@ public class JogoClueInicio {
     }
 
     // no começo do jogo da um nome de um suspeito para cada um dos piões
+    // passa o valor dos dados e a posição atual para fazer as casas alcançaveis
     public List<Casa> mapearCasasPossiveis(String nomeSuspeito, int valorDados) {
         Piao piao = pioes.get(nomeSuspeito);
         if (piao == null || piao.getPosicaoAtual() == null) {
