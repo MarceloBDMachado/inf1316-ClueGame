@@ -107,10 +107,13 @@ public class JogoClueFacade {
         }
     }
 
+    /**
+     * Cadastra todas as cartas do jogo no HashMap interno usando as traduções do colega.
+     */
     private void inicializarCartas() {
-        String[] nomesSuspeitos = {"Coronel Mustard", "Srta. Scarlet", "Professor Plum", "Reverendo Green", "Sra. White", "Sra. Peacock"};
-        String[] nomesArmas = {"Corda", "Cano de chumbo", "Faca", "Chave inglesa", "Castiçal", "Revólver"};
-        String[] nomesComodos = {"Cozinha", "Salão de Baile", "Estufa", "Sala de Jantar", "Sala de Estar", "Biblioteca", "Salão de Jogos", "Hall", "Escritório"};
+        String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
+        String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
+        String[] nomesComodos = {"Cozinha", "Salão de Festas", "Salão de Jogos", "Biblioteca", "Escritório", "Sala de Estar", "Sala de Jantar", "Terraço", "Hall"};
 
         for (String s : nomesSuspeitos) baralho.put(s, new Carta(s, TipoCarta.SUSPEITO));
         for (String a : nomesArmas) baralho.put(a, new Carta(a, TipoCarta.ARMA));
@@ -121,7 +124,8 @@ public class JogoClueFacade {
      * Posiciona os piões em coordenadas iniciais no tabuleiro para os testes da 1ª iteração.
      */
     private void inicializarPioes() {
-        String[] nomesSuspeitos = {"Coronel Mustard", "Srta. Scarlet", "Professor Plum", "Reverendo Green", "Sra. White", "Sra. Peacock"};
+        // Atualizado para bater com as cartas do colega
+        String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         // Coordenadas iniciais fictícias para teste (baseadas em um tabuleiro 25x24)
         int[][] posicoesIniciais = {{0,7}, {0,16}, {7,0}, {18,0}, {24,7}, {24,16}};
 
@@ -132,5 +136,19 @@ public class JogoClueFacade {
             tabuleiro.moverPiao(novoPiao, casaInicial);
             pioes.put(nomesSuspeitos[i], novoPiao);
         }
+    }
+
+    // --- MÉTODOS DE ACESSO PARA TESTES (Package-Private) ---
+    
+    Map<Integer, List<Carta>> getMaosJogadores() {
+        return maosJogadores;
+    }
+
+    Envelope getEnvelopeConfidencial() {
+        return envelopeConfidencial;
+    }
+
+    Piao getPiao(String nome) {
+        return pioes.get(nome);
     }
 }
