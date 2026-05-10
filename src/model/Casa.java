@@ -5,7 +5,7 @@ class Casa {
     private final int y;
     private final TipoCasa tipo;
     private String nomeComodo;
-    private Piao piaoOcupante;
+    private Piao piaoOcupante; // se já tem alguém no lugar
 
     Casa(int x, int y, TipoCasa tipo) {
         this.x = x;
@@ -14,6 +14,7 @@ class Casa {
         this.piaoOcupante = null;
     }
 
+    // comandos para incializar os comodos
     void setNomeComodo(String nomeComodo) {
         this.nomeComodo = nomeComodo;
     }
@@ -33,6 +34,7 @@ class Casa {
         return piaoOcupante != null;
     }
 
+    // para movimentação do piao
     Piao getPiao() {
         return piaoOcupante;
     }

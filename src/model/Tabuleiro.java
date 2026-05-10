@@ -15,6 +15,7 @@ class Tabuleiro {
         inicializarGrade();
     }
 
+    //inicializa o tabuleiro como uma grande grande com apenas corredores 
     private void inicializarGrade() {
         for (int i = 0; i < LINHAS; i++) {
             for (int j = 0; j < COLUNAS; j++) {
@@ -23,6 +24,7 @@ class Tabuleiro {
         }
     }
 
+    // procura uma casa
     Casa getCasa(int x, int y) {
         if (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS) {
             return grade[x][y];
@@ -30,6 +32,7 @@ class Tabuleiro {
         return null;
     }
 
+    // função para ver se é possivel mover o pião e garante que não possa ficar parado
     boolean moverPiao(Piao piao, Casa destino) {
         if (destino == null || destino.getTipo() == TipoCasa.INACESSIVEL || destino.isOcupada()) {
             return false;
@@ -45,6 +48,7 @@ class Tabuleiro {
         return true;
     }
 
+    // inicializa as casas alcansaveis e as casas que ja foram visitadas, impedindo loops e tempo gasto em jogadas idiotas (frente, trás, frente, trás...)
     List<Casa> mapearCasasAlcancaveis(Casa origem, int passos) {
         Set<Casa> casasAlcancaveis = new HashSet<>();
         Set<Casa> visitadas = new HashSet<>();
@@ -54,7 +58,8 @@ class Tabuleiro {
         return new ArrayList<>(casasAlcancaveis);
     }
 
-
+    // função para buscar por onde o jogador pode passar
+    // garante que o jogador pode mover de uma vez, sem que atravesse piões ou casas inacessíveis
     private void buscarCaminhos(Casa atual, int passosRestantes, Set<Casa> visitadas, Set<Casa> alcancaveis) {
         if (passosRestantes == 0) {
             alcancaveis.add(atual);
@@ -69,6 +74,8 @@ class Tabuleiro {
             Casa vizinho = getCasa(atual.getX() + dir[0], atual.getY() + dir[1]);
 
             if (vizinho != null && vizinho.getTipo() != TipoCasa.INACESSIVEL) {
+                // garante que o movimento nao seja idiota (que faça duas jogadas que dão no mesmo lugar)
+                // garante que a casa não seja ocupada
                 if (!visitadas.contains(vizinho) && !vizinho.isOcupada()) {
                     buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
                 }
