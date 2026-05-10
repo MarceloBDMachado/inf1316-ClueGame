@@ -43,6 +43,7 @@ public class JogoClueInicio {
         return tabuleiro.mapearCasasAlcancaveis(piao.getPosicaoAtual(), valorDados);
     }
 
+    // junta a lógica de como o pião deve se mover
     public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino) {
         Piao piao = pioes.get(nomeSuspeito);
         Casa destino = tabuleiro.getCasa(xDestino, yDestino);
@@ -53,6 +54,7 @@ public class JogoClueInicio {
         return false;
     }
 
+    
     public void prepararPartida(int numJogadores) {
         if(numJogadores < 3 || numJogadores > 6) {
             throw new IllegalArgumentException("número de jogadores inválido");
