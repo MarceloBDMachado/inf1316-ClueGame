@@ -144,3 +144,4 @@ public class JogoClueInicio {
     Piao getPiao(String nome) {
         return pioes.get(nome);
     }
+}
