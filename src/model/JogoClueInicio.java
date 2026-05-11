@@ -97,6 +97,7 @@ public class JogoClueInicio {
             maosJogadores.put(i, new ArrayList<>());
         }
 
+        // aqui distribuimos uma carta de cada vez para cada jogador até acabarem as cartas.
         int jogadorAtual = 1;
         for (Carta c : cartasRestantes) {
             maosJogadores.get(jogadorAtual).add(c);
@@ -107,6 +108,7 @@ public class JogoClueInicio {
         }
     }
 
+    // Cria as cartas com os nomes originais do Clue, em seus respectivos tipos.
     private void inicializarCartas() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};

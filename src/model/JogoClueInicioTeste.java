@@ -29,20 +29,33 @@ public class JogoClueInicioTeste {
 
     @Test
     public void testPreparacaoE_DistribuicaoDeCartas() {
-        int numJogadores = 4;
-        jogo.prepararPartida(numJogadores);
+        // Testa todos os cenários válidos de jogadores segundo as regras (3 a 6)
+        for (int numJogadores = 3; numJogadores <= 6; numJogadores++) {
 
-        assertNotNull("ERRO: envelope vazio", jogo.getEnvelopeConfidencial());
+            // Instanciamos um novo jogo a cada ciclo para garantir um estado limpo
+            JogoClueInicio jogoTeste = new JogoClueInicio();
+            jogoTeste.prepararPartida(numJogadores);
 
-        int totalCartasDistribuidas = 0;
-        for (int i = 1; i <= numJogadores; i++) {
-            List<Carta> mao = jogo.getMaosJogadores().get(i);
-            assertNotNull("ERRO: mão vazia", mao);
-            assertTrue("ERRO: mão menor que esperado", mao.size() >= 4);
-            totalCartasDistribuidas += mao.size();
+            assertNotNull("ERRO: envelope vazio para " + numJogadores + " jogadores",
+                    jogoTeste.getEnvelopeConfidencial());
+
+            int totalCartasDistribuidas = 0;
+            // Calcula o mínimo matemático de cartas que qualquer jogador deve receber
+            int minimoCartasEsperado = 18 / numJogadores;
+
+            for (int i = 1; i <= numJogadores; i++) {
+                List<Carta> mao = jogoTeste.getMaosJogadores().get(i);
+
+                assertNotNull("ERRO: mão vazia para o jogador " + i, mao);
+                assertTrue("ERRO: jogador " + i + " recebeu menos que " + minimoCartasEsperado + " cartas",
+                        mao.size() >= minimoCartasEsperado);
+
+                totalCartasDistribuidas += mao.size();
+            }
+
+            assertEquals("ERRO: total de cartas na mesa incorreto para " + numJogadores + " jogadores",
+                    18, totalCartasDistribuidas);
         }
-
-        assertEquals("ERRO: todas as cartas não foram distribuídas", 18, totalCartasDistribuidas);
     }
 
     @Test
