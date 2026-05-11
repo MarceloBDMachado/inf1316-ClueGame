@@ -34,8 +34,7 @@ public class JogoClueInicioTeste {
             JogoClueInicio jogoTeste = new JogoClueInicio();
             jogoTeste.prepararPartida(numJogadores);
 
-            assertNotNull("ERRO: envelope vazio para " + numJogadores + " jogadores",
-                    jogoTeste.getEnvelopeConfidencial());
+            assertNotNull("ERRO: envelope vazio para " + numJogadores + " jogadores", jogoTeste.getEnvelopeConfidencial());
 
             int totalCartasDistribuidas = 0;
             int minCartas = 18 / numJogadores;
