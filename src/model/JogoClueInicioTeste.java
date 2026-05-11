@@ -28,25 +28,34 @@ public class JogoClueInicioTeste {
     }
 
     @Test
-    public void testPreparacaoE_DistribuicaoDeCartas() {
-        int numJogadores = 4;
-        jogo.prepararPartida(numJogadores);
+    public void testeDistrCartas() {
+        for (int numJogadores = 3; numJogadores <= 6; numJogadores++) {
 
-        assertNotNull("ERRO: envelope vazio", jogo.getEnvelopeConfidencial());
+            JogoClueInicio jogoTeste = new JogoClueInicio();
+            jogoTeste.prepararPartida(numJogadores);
 
-        int totalCartasDistribuidas = 0;
-        for (int i = 1; i <= numJogadores; i++) {
-            List<Carta> mao = jogo.getMaosJogadores().get(i);
-            assertNotNull("ERRO: mão vazia", mao);
-            assertTrue("ERRO: mão menor que esperado", mao.size() >= 4);
-            totalCartasDistribuidas += mao.size();
+            assertNotNull("ERRO: envelope vazio para " + numJogadores + " jogadores",
+                    jogoTeste.getEnvelopeConfidencial());
+
+            int totalCartasDistribuidas = 0;
+            int minCartas = 18 / numJogadores;
+
+            for (int i = 1; i <= numJogadores; i++) {
+                List<Carta> mao = jogoTeste.getMaosJogadores().get(i);
+
+                assertNotNull("ERRO: mão vazia para o jogador " + i, mao);
+                assertTrue("ERRO: jogador " + i + " recebeu menos cartas que o esperado", mao.size() >= minCartas);
+
+                totalCartasDistribuidas += mao.size();
+            }
+
+            assertEquals("ERRO: total de cartas na mesa incorreto para " + numJogadores + " jogadores",
+                    18, totalCartasDistribuidas);
         }
-
-        assertEquals("ERRO: todas as cartas não foram distribuídas", 18, totalCartasDistribuidas);
     }
 
     @Test
-    public void testMapeamentoDeMovimento() {
+    public void testeMovimento() {
         List<Casa> casasAlcancaveis = jogo.mapearCasasPossiveis("Coronel Mostarda", 2);
 
         assertNotNull("ERRO: lista de casas nulas", casasAlcancaveis);
@@ -54,7 +63,7 @@ public class JogoClueInicioTeste {
     }
 
     @Test
-    public void testDeslocamentoDoPiao() {
+    public void testeMovPiao() {
         Piao coronel = jogo.getPiao("Coronel Mostarda");
         assertNotNull(coronel);
         assertEquals(0, coronel.getPosicaoAtual().getX());

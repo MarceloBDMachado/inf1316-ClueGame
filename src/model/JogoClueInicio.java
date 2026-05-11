@@ -9,6 +9,7 @@ public class JogoClueInicio {
     private Dado dado2;
     private Tabuleiro tabuleiro;
 
+    //HashMap mapeando os piões, o baralho e as mãos dos jogadores
     private Map<String, Piao> pioes;
     private Map<String, Carta> baralho;
     private Map<Integer, List<Carta>> maosJogadores;
@@ -33,8 +34,8 @@ public class JogoClueInicio {
         return new int[]{dado1.rolar(), dado2.rolar()};
     }
 
-    // no começo do jogo da um nome de um suspeito para cada um dos piões
-    // passa o valor dos dados e a posição atual para fazer as casas alcançaveis
+    // no começo do jogo dá nome de um suspeito para cada um dos piões
+    // passa o valor dos dados e a posição atual para fazer as casas alcançáveis
     public List<Casa> mapearCasasPossiveis(String nomeSuspeito, int valorDados) {
         Piao piao = pioes.get(nomeSuspeito);
         if (piao == null || piao.getPosicaoAtual() == null) {
@@ -43,54 +44,60 @@ public class JogoClueInicio {
         return tabuleiro.mapearCasasAlcancaveis(piao.getPosicaoAtual(), valorDados);
     }
 
-    // junta a lógica de como o pião deve se mover
+    // Deslocamos o pião para a casa que for escolhida
     public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino) {
         Piao piao = pioes.get(nomeSuspeito);
         Casa destino = tabuleiro.getCasa(xDestino, yDestino);
-
         if (piao != null && destino != null) {
             return tabuleiro.moverPiao(piao, destino);
         }
         return false;
     }
 
-    
     public void prepararPartida(int numJogadores) {
-        if(numJogadores < 3 || numJogadores > 6) {
+        // controle de erro caso descumpra a regra de número de jogadores
+        if(numJogadores < 3 || numJogadores > 6) { // Throw é um botão de abortar caso de este erro
             throw new IllegalArgumentException("número de jogadores inválido");
         }
 
+        // separa as cartas para sortear
         List<Carta> suspeitos = new ArrayList<>();
         List<Carta> armas = new ArrayList<>();
         List<Carta> comodos = new ArrayList<>();
 
+        // separamos as cartas por tipo e as adicionamos a c
         for (Carta c : baralho.values()) {
             if (c.getTipo() == TipoCarta.SUSPEITO) suspeitos.add(c);
             else if (c.getTipo() == TipoCarta.ARMA) armas.add(c);
             else if (c.getTipo() == TipoCarta.COMODO) comodos.add(c);
         }
 
+        // Embaralha tudo com o metodo shuffle
         Collections.shuffle(suspeitos);
         Collections.shuffle(armas);
         Collections.shuffle(comodos);
 
+        // Tira a primeira carta de cada pilha e esconde no envelope de resposta
         envelopeConfidencial.definirSolucao(
                 suspeitos.remove(0),
                 armas.remove(0),
                 comodos.remove(0)
         );
 
+        // Junta o que sobrou, embaralha de novo e distribui para os jogadores
         List<Carta> cartasRestantes = new ArrayList<>();
         cartasRestantes.addAll(suspeitos);
         cartasRestantes.addAll(armas);
         cartasRestantes.addAll(comodos);
-
         Collections.shuffle(cartasRestantes);
 
+        // Inicializa a mão de cada jogador no nosso HashMap.
+        // Nós criamos um ArrayList vazio e associamos ao número do jogador
         for (int i = 1; i <= numJogadores; i++) {
             maosJogadores.put(i, new ArrayList<>());
         }
 
+        // aqui distribuimos uma carta de cada vez para cada jogador até acabarem as cartas.
         int jogadorAtual = 1;
         for (Carta c : cartasRestantes) {
             maosJogadores.get(jogadorAtual).add(c);
@@ -101,6 +108,7 @@ public class JogoClueInicio {
         }
     }
 
+    // Cria as cartas com os nomes originais do Clue, em seus respectivos tipos.
     private void inicializarCartas() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
@@ -136,4 +144,3 @@ public class JogoClueInicio {
     Piao getPiao(String nome) {
         return pioes.get(nome);
     }
-}

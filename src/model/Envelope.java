@@ -5,7 +5,7 @@ class Envelope {
     private Carta crimeArma;
     private Carta crimeComodo;
 
-    // inicializa o envelope da solução
+    // inicializa o envelope da resposta
     void definirSolucao(Carta suspeito, Carta arma, Carta comodo) {
         this.crimeSuspeito = suspeito;
         this.crimeArma = arma;
