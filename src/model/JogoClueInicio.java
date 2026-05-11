@@ -114,33 +114,36 @@ public class JogoClueInicio {
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
         String[] nomesComodos = {"Cozinha", "Salão de Festas", "Salão de Jogos", "Biblioteca", "Escritório", "Sala de Estar", "Sala de Jantar", "Terraço", "Hall"};
 
+        // Pegamos os arrays com os nomes originais do Clue e, para cada nome, damos um new Carta.
+        // Em seguida, usamos o metodo put para salvar essa carta no nosso HashMap do baralho
         for (String s : nomesSuspeitos) baralho.put(s, new Carta(s, TipoCarta.SUSPEITO));
         for (String a : nomesArmas) baralho.put(a, new Carta(a, TipoCarta.ARMA));
         for (String c : nomesComodos) baralho.put(c, new Carta(c, TipoCarta.COMODO));
     }
 
+    // Cria os piões, coloca eles nas coordenadas iniciais corretas do tabuleiro.
     private void inicializarPioes() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         int[][] posicoesIniciais = {{0,7}, {0,16}, {7,0}, {18,0}, {24,7}, {24,16}};
 
+        // Cria cada pião, busca as coordenadas (X e Y) de largada na nossa matriz,
+        // coloca a peça no tabuleiro e salva no HashMap para acessarmos rápido depois.
         for (int i = 0; i < nomesSuspeitos.length; i++) {
             Piao novoPiao = new Piao(nomesSuspeitos[i]);
+            // pega pelo index cada piao e sua posicao, entao o suspeito[1] está na posicaoinicial[1]
             Casa casaInicial = tabuleiro.getCasa(posicoesIniciais[i][0], posicoesIniciais[i][1]);
-
             tabuleiro.moverPiao(novoPiao, casaInicial);
             pioes.put(nomesSuspeitos[i], novoPiao);
         }
     }
 
-    
+    // Getters restritos ao pacote para testes e checagens internas.
     Map<Integer, List<Carta>> getMaosJogadores() {
         return maosJogadores;
     }
-
     Envelope getEnvelopeConfidencial() {
         return envelopeConfidencial;
     }
-
     Piao getPiao(String nome) {
         return pioes.get(nome);
     }
