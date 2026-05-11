@@ -57,7 +57,7 @@ public class JogoClueInicioTeste {
         List<Casa> casasAlcancaveis = jogo.mapearCasasPossiveis("Coronel Mostarda", 2);
 
         assertNotNull("ERRO: lista de casas nulas", casasAlcancaveis);
-        assertFalse("ERRO: nao tem casa alcasáveis", casasAlcancaveis.isEmpty());
+        assertFalse("ERRO: nao tem casa alcançáveis", casasAlcancaveis.isEmpty());
     }
 
     @Test

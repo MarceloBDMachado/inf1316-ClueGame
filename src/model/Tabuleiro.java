@@ -15,7 +15,7 @@ class Tabuleiro {
         inicializarGrade();
     }
 
-    //inicializa o tabuleiro como uma grande grande com apenas corredores 
+    //inicializa o tabuleiro como uma grande grade com apenas corredores
     private void inicializarGrade() {
         for (int i = 0; i < LINHAS; i++) {
             for (int j = 0; j < COLUNAS; j++) {
@@ -24,7 +24,7 @@ class Tabuleiro {
         }
     }
 
-    // procura uma casa
+    // metodo de busca de casa
     Casa getCasa(int x, int y) {
         if (x >= 0 && x < LINHAS && y >= 0 && y < COLUNAS) {
             return grade[x][y];
@@ -33,6 +33,7 @@ class Tabuleiro {
     }
 
     // função para ver se é possivel mover o pião e garante que não possa ficar parado
+    // casas inacessiveis ainda foram, no momento, definidos apenas como casas com outros suspeitos
     boolean moverPiao(Piao piao, Casa destino) {
         if (destino == null || destino.getTipo() == TipoCasa.INACESSIVEL || destino.isOcupada()) {
             return false;
@@ -48,7 +49,8 @@ class Tabuleiro {
         return true;
     }
 
-    // inicializa as casas alcansaveis e as casas que ja foram visitadas, impedindo loops e tempo gasto em jogadas idiotas (frente, trás, frente, trás...)
+    // inicializa as casas alcançaveis e as casas que ja foram visitadas,
+    // impedindo loops e tempo gasto em jogadas idiotas (frente, trás, frente, trás...)
     List<Casa> mapearCasasAlcancaveis(Casa origem, int passos) {
         Set<Casa> casasAlcancaveis = new HashSet<>();
         Set<Casa> visitadas = new HashSet<>();
