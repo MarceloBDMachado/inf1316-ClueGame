@@ -15,7 +15,7 @@ public class JogoClueInicioTeste {
     }
 
     @Test
-    public void testRolarDados() {
+    public void testeRolarDados() {
         for (int i = 0; i < 100; i++) {
             int[] resultado = jogo.rolarDados();
 
