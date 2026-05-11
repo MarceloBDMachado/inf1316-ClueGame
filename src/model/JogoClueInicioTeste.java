@@ -49,8 +49,7 @@ public class JogoClueInicioTeste {
                 totalCartasDistribuidas += mao.size();
             }
 
-            assertEquals("ERRO: total de cartas na mesa incorreto para " + numJogadores + " jogadores",
-                    18, totalCartasDistribuidas);
+            assertEquals("ERRO: total de cartas na mesa incorreto para " + numJogadores + " jogadores", 18, totalCartasDistribuidas);
         }
     }
 
