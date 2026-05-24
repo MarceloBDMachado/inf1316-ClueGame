@@ -99,6 +99,7 @@ class Tabuleiro {
     // função para buscar por onde o jogador pode passar
     // garante que o jogador pode mover de uma vez, sem que atravesse piões ou casas inacessíveis
     private void buscarCaminhos(Casa atual, int passosRestantes, Set<Casa> visitadas, Set<Casa> alcancaveis) {
+        // Se acabaram os passos, adiciona a casa e retorna
         if (passosRestantes == 0) {
             alcancaveis.add(atual);
             return;
@@ -112,10 +113,13 @@ class Tabuleiro {
             Casa vizinho = getCasa(atual.getX() + dir[0], atual.getY() + dir[1]);
 
             if (vizinho != null && vizinho.getTipo() != TipoCasa.INACESSIVEL) {
-                // garante que o movimento nao seja idiota (que faça duas jogadas que dão no mesmo lugar)
-                // garante que a casa não seja ocupada
                 if (!visitadas.contains(vizinho) && !vizinho.isOcupada()) {
-                    buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
+                    
+                    if (vizinho.getTipo() == TipoCasa.COMODO) {
+                        alcancaveis.add(vizinho);
+                    } else {
+                        buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
+                    }
                 }
             }
         }
