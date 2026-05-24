@@ -137,6 +137,22 @@ public class JogoClueInicio {
         }
     }
 
+    // Retorna a lista de nomes dos suspeitos para a View conseguir iterar e desenhar
+    public List<String> getNomesSuspeitos() {
+        return new ArrayList<>(pioes.keySet());
+    }
+
+    // Retorna a posição (linha e coluna) de um pião específico para a View desenhar
+    // Retorna um array onde o index 0 é a Linha (X) e index 1 é a Coluna (Y)
+    public int[] getCoordenadasPiao(String nomeSuspeito) {
+        Piao p = pioes.get(nomeSuspeito);
+        if (p != null && p.getPosicaoAtual() != null) {
+            Casa c = p.getPosicaoAtual();
+            return new int[]{c.getX(), c.getY()};
+        }
+        return null; // Caso o peão não esteja no tabuleiro
+    }
+
     // Getters restritos ao pacote para testes e checagens internas.
     Map<Integer, List<Carta>> getMaosJogadores() {
         return maosJogadores;
