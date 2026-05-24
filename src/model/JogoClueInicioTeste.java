@@ -67,9 +67,7 @@ public class JogoClueInicioTeste {
         assertEquals(0, coronel.getPosicaoAtual().getX());
         assertEquals(16, coronel.getPosicaoAtual().getY());
 
-        boolean moveu = jogo.deslocarPiao("Coronel Mostarda", 0, 17);
-
-        assertTrue("ERRO: movimento para casa não valida", moveu);
+        boolean moveu = jogo.deslocarPiao("Coronel Mostarda", 0, 17, 1);        assertTrue("ERRO: movimento para casa não valida", moveu);
         assertEquals("ERRO: posição X não foi atualizada", 0, coronel.getPosicaoAtual().getX());
         assertEquals("ERRO: posição Y não foi atualizada", 17, coronel.getPosicaoAtual().getY());
     }

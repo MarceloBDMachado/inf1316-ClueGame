@@ -15,11 +15,47 @@ class Tabuleiro {
         inicializarGrade();
     }
 
-    //inicializa o tabuleiro como uma grande grade com apenas corredores
+    // Inicializa o tabuleiro com base numa matriz visual (mapa)
     private void inicializarGrade() {
+        // Mapa visual do Clue: 25 Linhas por 24 Colunas
+        // 'C' = Corredor (onde se pode andar)
+        // 'I' = Inacessível (Paredes, relva exterior, interior dos cómodos onde não há portas)
+        String[] mapaBase = {
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 0 (Topo)
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 1
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 2
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 3
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 4
+                "IIIIIIIIICIIIIICIIIIIIII", // Linha 5
+                "IIIIIIIICCCCCCCCIIIIIIIC", // Linha 6 (Início da Dona Violeta na ponta direita)
+                "CCCCCCCCCCCCCCCCCCCCCCCC", // Linha 7 (Corredor principal superior)
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 8
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 9
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 10
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 11
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 12
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 13
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 14
+                "IIIIIIICIIIIIIIICIIIIIII", // Linha 15
+                "CCCCCCCCCCCCCCCCCCCCCCCC", // Linha 16 (Corredor principal inferior)
+                "CIIIIIIICIIIIIIICIIIIIII", // Linha 17 (Início do Coronel Mostarda na ponta esquerda)
+                "IIIIIIIICIIIIIIICIIIIIII", // Linha 18
+                "IIIIIIIICIIIIIIICIIIIIIC", // Linha 19 (Início do Prof. Plum na ponta direita)
+                "IIIIIIIICIIIIIIICIIIIIII", // Linha 20
+                "IIIIIIIICIIIIIIICIIIIIII", // Linha 21
+                "IIIIIIIICIIIIIIICIIIIIII", // Linha 22
+                "IIIIIIIICIIIIIIICIIIIIII", // Linha 23
+                "IIIIIIICIIIIIIIICIIIIIII"  // Linha 24 (Início da Srta. Rose na coluna 7)
+        };
+
         for (int i = 0; i < LINHAS; i++) {
             for (int j = 0; j < COLUNAS; j++) {
-                grade[i][j] = new Casa(i, j, TipoCasa.CORREDOR);
+                char tipo = mapaBase[i].charAt(j);
+                if (tipo == 'C') {
+                    grade[i][j] = new Casa(i, j, TipoCasa.CORREDOR);
+                } else {
+                    grade[i][j] = new Casa(i, j, TipoCasa.INACESSIVEL);
+                }
             }
         }
     }

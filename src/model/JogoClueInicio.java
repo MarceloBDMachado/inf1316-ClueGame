@@ -44,13 +44,21 @@ public class JogoClueInicio {
         return tabuleiro.mapearCasasAlcancaveis(piao.getPosicaoAtual(), valorDados);
     }
 
-    // Deslocamos o pião para a casa que for escolhida
-    public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino) {
+    // Deslocamos o pião para a casa que for escolhida, APENAS se for alcançável
+    public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino, int passos) {
         Piao piao = pioes.get(nomeSuspeito);
         Casa destino = tabuleiro.getCasa(xDestino, yDestino);
+
         if (piao != null && destino != null) {
-            return tabuleiro.moverPiao(piao, destino);
+            // 1. Usa a sua própria função para descobrir onde ele pode ir com os passos do dado
+            List<Casa> casasPermitidas = mapearCasasPossiveis(nomeSuspeito, passos);
+
+            // 2. Se a casa clicada estiver na lista de casas permitidas, efetua o movimento
+            if (casasPermitidas.contains(destino)) {
+                return tabuleiro.moverPiao(piao, destino);
+            }
         }
+        // Retorna falso se o clique foi longe demais, numa parede, ou fora do tabuleiro
         return false;
     }
 
@@ -121,22 +129,27 @@ public class JogoClueInicio {
         for (String c : nomesComodos) baralho.put(c, new Carta(c, TipoCarta.COMODO));
     }
 
-    // Cria os piões, coloca eles nas coordenadas iniciais corretas do tabuleiro.
+    // Cria os piões e coloca-os nas coordenadas iniciais correctas do tabuleiro clássico (25 linhas x 24 colunas).
     private void inicializarPioes() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
-        int[][] posicoesIniciais = {{0,7}, {0,16}, {7,0}, {18,0}, {24,7}, {24,16}};
 
-        // Cria cada pião, busca as coordenadas (X e Y) de largada na nossa matriz,
-        // coloca a peça no tabuleiro e salva no HashMap para acessarmos rápido depois.
+        // Coordenadas reais mapeadas [Linha, Coluna] com base na grelha 25x24 da imagem:
+        int[][] posicoesIniciais = {
+                {24, 7},  // Srta. Rose (Base do tabuleiro, entre Sala de Estar e Entrada)
+                {17, 0},  // Coronel Mostarda (Lado esquerdo)
+                {19, 23}, // Professor Plum (Lado direito)
+                {0, 14},  // Sr. Marinho (Topo do tabuleiro)
+                {6, 23},  // Dona Violeta (Lado direito superior)
+                {0, 9}    // Dona Branca (Topo do tabuleiro)
+        };
+
         for (int i = 0; i < nomesSuspeitos.length; i++) {
             Piao novoPiao = new Piao(nomesSuspeitos[i]);
-            // pega pelo index cada piao e sua posicao, entao o suspeito[1] está na posicaoinicial[1]
             Casa casaInicial = tabuleiro.getCasa(posicoesIniciais[i][0], posicoesIniciais[i][1]);
             tabuleiro.moverPiao(novoPiao, casaInicial);
             pioes.put(nomesSuspeitos[i], novoPiao);
         }
     }
-
     // Retorna a lista de nomes dos suspeitos para a View conseguir iterar e desenhar
     public List<String> getNomesSuspeitos() {
         return new ArrayList<>(pioes.keySet());

@@ -65,8 +65,7 @@ public class PainelTabuleiro extends JPanel {
                 System.out.println("Tentando mover " + jogadorDaVez + " para [" + linhaLogica + "][" + colunaLogica + "]");
 
                 // CONTROLLER REAL: Manda a requisição de movimento para a sua fachada JogoClueInicio
-                boolean movimentoValido = jogo.deslocarPiao(jogadorDaVez, linhaLogica, colunaLogica);
-
+                boolean movimentoValido = jogo.deslocarPiao(jogadorDaVez, linhaLogica, colunaLogica, passosDisponiveis);
                 if (movimentoValido) {
                     System.out.println("Peão movido com sucesso no Model!");
                     passosDisponiveis = 0; // Gastou a jogada
