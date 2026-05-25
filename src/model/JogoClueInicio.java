@@ -14,6 +14,8 @@ public class JogoClueInicio {
     private Map<String, Carta> baralho;
     private Map<Integer, List<Carta>> maosJogadores;
     private Envelope envelopeConfidencial;
+    private final List<String> ordemJogadores = Arrays.asList("Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca");
+    private int indiceTurnoAtual = 0;
 
     // Inicializa todas as diferentes funcionalidades para o Jogo
     public JogoClueInicio() {
@@ -32,6 +34,14 @@ public class JogoClueInicio {
     // função simples para sempre girar os dois dados ao mesmo tempo
     public int[] rolarDados() {
         return new int[]{dado1.rolar(), dado2.rolar()};
+    }
+
+    public String getJogadorDaVez() {
+        return ordemJogadores.get(indiceTurnoAtual);
+    }
+
+    public void passarTurno() {
+        indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
     }
 
     // no começo do jogo dá nome de um suspeito para cada um dos piões
