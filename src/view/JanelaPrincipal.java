@@ -22,6 +22,16 @@ public class JanelaPrincipal extends JFrame {
     private JPanel painelDadosImagens;
     private JogoClueInicio partida;
 
+    // Dentro de JanelaPrincipal.java
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new JanelaPrincipal().setVisible(true);
+            }
+        });
+    }
+
     public JanelaPrincipal() {
         // Configurações obrigatórias exigidas pelo enunciado
         setTitle("Clue - Detetive | Segunda Iteração");
@@ -30,8 +40,8 @@ public class JanelaPrincipal extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Cria a API do jogo primeiro (O Model)
-        model.JogoClueInicio partida = new model.JogoClueInicio();
+        // CORREÇÃO: Removido o tipo 'model.JogoClueInicio' para inicializar o campo da classe
+        this.partida = new model.JogoClueInicio();
 
         // Passa o Model para dentro da View (O Tabuleiro)
         painelTabuleiro = new PainelTabuleiro(partida);
@@ -44,7 +54,7 @@ public class JanelaPrincipal extends JFrame {
         painelLateral.setPreferredSize(new Dimension(250, 900));
 
         // Título Lateral indicando o jogador da vez
-        JLabel labelJogador = new JLabel();
+        labelJogador = new JLabel();
         labelJogador.setFont(new Font("Arial", Font.BOLD, 14));
         labelJogador.setForeground(Color.RED); // Indicação visual clara solicitada no PDF
         painelLateral.add(labelJogador);
@@ -98,29 +108,29 @@ public class JanelaPrincipal extends JFrame {
     public void atualizarTurnoVisual() {
         String jogador = partida.getJogadorDaVez();
         labelJogador.setText("Vez de: " + jogador);
-    
+
         // A própria View determina a cor correspondente ao nome do jogador
         painelDadosImagens.setBackground(obterCorDoJogador(jogador));
-    painelDadosImagens.repaint();
+        painelDadosImagens.repaint();
     }
-    
 
-    // Método auxiliar da View para mapear os nomes às cores do Swing
+
+    // Metodo auxiliar da View para mapear os nomes às cores do Swing
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
-            case "Srta. Rose": 
+            case "Srta. Rose":
                 return Color.RED;
-            case "Coronel Mostarda": 
+            case "Coronel Mostarda":
                 return Color.YELLOW;
-            case "Professor Plum": 
+            case "Professor Plum":
                 return new Color(128, 0, 128); // Roxo clássico do Plum
-            case "Sr. Marinho": 
-            return Color.GREEN;
-            case "Dona Violeta": 
+            case "Sr. Marinho":
+                return Color.GREEN;
+            case "Dona Violeta":
                 return Color.BLUE;
-            case "Dona Branca": 
+            case "Dona Branca":
                 return Color.WHITE;
-            default: 
+            default:
                 return Color.LIGHT_GRAY;
         }
     }
@@ -133,7 +143,7 @@ public class JanelaPrincipal extends JFrame {
             labelImagemDado1.setIcon(new ImageIcon(img1.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
             labelImagemDado2.setIcon(new ImageIcon(img2.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
         }       catch (IOException e) {
-        System.out.println("Erro ao carregar imagens dos dados: verifique o caminho resources/Tabuleiros/");
+            System.out.println("Erro ao carregar imagens dos dados: verifique o caminho resources/Tabuleiros/");
         }
     }
 }

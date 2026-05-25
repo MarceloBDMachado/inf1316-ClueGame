@@ -12,10 +12,28 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 
+
+
 public class PainelTabuleiro extends JPanel {
     private Image imagemTabuleiro;
     private int passosDisponiveis = 0;
     private Map<String, Image> imagensPeoes = new HashMap<>();
+
+    // Dentro do seu PainelTabuleiro.java, ajuste estas variáveis:
+
+    // 1. Defina o tamanho da grade (confirme se é 24x24 ou 25x24)
+    private final int totalLinhas = 25;
+    private final int totalColunas = 24;
+
+    // 2. Mude estes valores manuais até a grade vermelha encaixar nos quadrados da imagem
+    private final float propMargemEsq = 100.0f / 1350.0f;
+    private final float propMargemTop = 60.0f / 900.0f;
+
+    // 3. Mude o tamanho dos quadrados para que a grade termine onde a imagem termina
+    private final float propLarguraCasa = 48.0f / 1350.0f;
+    private final float propAlturaCasa = 31.0f / 900.0f;
+
+
 
     // NOVO: Referência ao jogo (Controller/Model) e controle de turno
     private JogoClueInicio jogo;
@@ -29,7 +47,7 @@ public class PainelTabuleiro extends JPanel {
 
         // Carrega o tabuleiro
         try {
-            imagemTabuleiro = ImageIO.read(new File("resources/Tabuleiros/Tabuleiro-Original.JPG"));
+            imagemTabuleiro = ImageIO.read(new File("resources/Tabuleiros/Tabuleiro-Clue-A.JPG"));
 
             // Carrega os peões (O HashMap de nomes foi adaptado para a realidade do seu model)
             imagensPeoes.put("Srta. Rose", ImageIO.read(new File("resources/Suspeitos/Scarlet.jpg")));
@@ -53,14 +71,14 @@ public class PainelTabuleiro extends JPanel {
                     return;
                 }
 
-                int totalLinhas = 25;
-                int totalColunas = 24;
-                int larguraCasa = getWidth() / totalColunas;
-                int alturaCasa = getHeight() / totalLinhas;
+                // --- AJUSTES NO MOUSE LISTENER ---
+                float margemEsq = getWidth() * propMargemEsq;
+                float margemTop = getHeight() * propMargemTop;
+                float larguraCasa = getWidth() * propLarguraCasa;
+                float alturaCasa = getHeight() * propAlturaCasa;
 
-                // Transforma pixel em coordenada do seu Tabuleiro.java
-                int colunaLogica = e.getX() / larguraCasa;
-                int linhaLogica = e.getY() / alturaCasa;
+                int colunaLogica = (int) ((e.getX() - margemEsq) / larguraCasa);
+                int linhaLogica = (int) ((e.getY() - margemTop) / alturaCasa);
 
                 System.out.println("Tentando mover " + jogadorDaVez + " para [" + linhaLogica + "][" + colunaLogica + "]");
 
@@ -79,10 +97,6 @@ public class PainelTabuleiro extends JPanel {
 
     public void setPassosDisponiveis(int passos) {
         this.passosDisponiveis = passos;
-
-        // Opcional: Aqui nós já poderíamos chamar a função jogo.mapearCasasPossiveis
-        // e pintar o caminho de amarelo na tela (usando FillRect com opacidade).
-        // Mas se a falta de tempo apertar, o deslocarPiao já valida a posição.
     }
 
     // Metodo que permite mudar o jogador da vez quando a interface pedir
@@ -93,6 +107,13 @@ public class PainelTabuleiro extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        // Calcula os valores reais baseados no tamanho ATUAL da janela
+        float margemEsq = getWidth() * propMargemEsq;
+        float margemTop = getHeight() * propMargemTop;
+        float larguraCasa = getWidth() * propLarguraCasa;
+        float alturaCasa = getHeight() * propAlturaCasa;
+
         Graphics2D g2d = (Graphics2D) g;
 
         if (imagemTabuleiro != null) {
@@ -100,10 +121,6 @@ public class PainelTabuleiro extends JPanel {
         }
 
         // LÓGICA DE RENDERIZAÇÃO DE TODOS OS PEÕES USANDO O SEU MODEL
-        int totalLinhas = 25;
-        int totalColunas = 24;
-        int larguraCasa = getWidth() / totalColunas;
-        int alturaCasa = getHeight() / totalLinhas;
 
         // Pega todos os suspeitos ativos no seu jogo e desenha eles
         if (jogo != null) {
@@ -116,13 +133,23 @@ public class PainelTabuleiro extends JPanel {
 
                     Image imgPiao = imagensPeoes.get(nomeSuspeito);
                     if (imgPiao != null) {
-                        int pixelX = piaoColuna * larguraCasa;
-                        int pixelY = piaoLinha * alturaCasa;
+                        // --- AJUSTES NO PAINT COMPONENT ---
+                        int pixelX = (int) (margemEsq + (piaoColuna * larguraCasa));
+                        int pixelY = (int) (margemTop + (piaoLinha * alturaCasa));
                         // Centraliza o peão e diminui a imagem pra não ficar esticado
-                        g2d.drawImage(imgPiao, pixelX + 2, pixelY + 2, larguraCasa - 4, alturaCasa - 4, this);
+                        g2d.drawImage(imgPiao, pixelX + 2, pixelY + 2, (int)larguraCasa - 4, (int)alturaCasa - 4, this);
                     }
                 }
             }
+        }
+
+        // Grade Vermelha de Debug
+        g2d.setColor(Color.RED);
+        for (int i = 0; i <= totalLinhas; i++) {
+            g2d.drawLine((int)margemEsq, (int)(margemTop + (i * alturaCasa)), (int)(margemEsq + (totalColunas * larguraCasa)), (int)(margemTop + (i * alturaCasa)));
+        }
+        for (int j = 0; j <= totalColunas; j++) {
+            g2d.drawLine((int)(margemEsq + (j * larguraCasa)), (int)margemTop, (int)(margemEsq + (j * larguraCasa)), (int)(margemTop + (totalLinhas * alturaCasa)));
         }
     }
 }
