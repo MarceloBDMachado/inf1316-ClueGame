@@ -22,14 +22,14 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         Controller.getInstance().registrarObservador(this);
 
         try {
-            imagemTabuleiro = ImageIO.read(new File("resources/Tabuleiros/Tabuleiro-Clue-A.jpg"));
+            imagemTabuleiro = ImageIO.read(new File("resource/Tabuleiros/Tabuleiro-Clue-A.jpg"));
 
-            imagensPeoes.put("Srta. Rose", ImageIO.read(new File("resources/Suspeitos/Scarlet.jpg")));
-            imagensPeoes.put("Coronel Mostarda", ImageIO.read(new File("resources/Suspeitos/Mustard.jpg")));
-            imagensPeoes.put("Professor Plum", ImageIO.read(new File("resources/Suspeitos/Plum.jpg")));
-            imagensPeoes.put("Sr. Marinho", ImageIO.read(new File("resources/Suspeitos/Green.jpg")));
-            imagensPeoes.put("Dona Violeta", ImageIO.read(new File("resources/Suspeitos/Peacock.jpg")));
-            imagensPeoes.put("Dona Branca", ImageIO.read(new File("resources/Suspeitos/White.jpg")));
+            imagensPeoes.put("Srta. Rose", ImageIO.read(new File("resource/Suspeitos/Scarlet.jpg")));
+            imagensPeoes.put("Coronel Mostarda", ImageIO.read(new File("resource/Suspeitos/Mustard.jpg")));
+            imagensPeoes.put("Professor Plum", ImageIO.read(new File("resource/Suspeitos/Plum.jpg")));
+            imagensPeoes.put("Sr. Marinho", ImageIO.read(new File("resource/Suspeitos/Green.jpg")));
+            imagensPeoes.put("Dona Violeta", ImageIO.read(new File("resource/Suspeitos/Peacock.jpg")));
+            imagensPeoes.put("Dona Branca", ImageIO.read(new File("resource/Suspeitos/White.jpg")));
 
         } catch (IOException e) {
             System.out.println("Erro crítico: Falha ao carregar imagens!");
