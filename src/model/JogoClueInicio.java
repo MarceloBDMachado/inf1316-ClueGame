@@ -1,10 +1,13 @@
 package model;
 
+// IMPORTAÇÕES NOVAS PARA O PADRÃO OBSERVER
+import observer.Observado;
+import observer.Observador;
+
 import java.util.*;
 
-
-// Inicializa o inicio do Jogo
-public class JogoClueInicio {
+// ALTERAÇÃO: A classe agora implementa a interface Observado (Padrão Observer)
+public class JogoClueInicio implements Observado {
     private Dado dado1;
     private Dado dado2;
     private Tabuleiro tabuleiro;
@@ -16,6 +19,9 @@ public class JogoClueInicio {
     private Envelope envelopeConfidencial;
     private final List<String> ordemJogadores = Arrays.asList("Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca");
     private int indiceTurnoAtual = 0;
+
+    // NOVA VARIÁVEL: Lista que guarda quem está "escutando" as mudanças (a View)
+    private List<Observador> observadores = new ArrayList<>();
 
     // Inicializa todas as diferentes funcionalidades para o Jogo
     public JogoClueInicio() {
@@ -31,9 +37,39 @@ public class JogoClueInicio {
         inicializarPioes();
     }
 
+    // ==========================================
+    // IMPLEMENTAÇÃO DOS MÉTODOS DA INTERFACE OBSERVADO
+    // ==========================================
+    @Override
+    public void adicionarObservador(Observador o) {
+        observadores.add(o);
+    }
+
+    @Override
+    public void removerObservador(Observador o) {
+        observadores.remove(o);
+    }
+
+    @Override
+    public void notificarObservadores() {
+        // Grita para todas as Views registradas: "Algo mudou, atualizem-se!"
+        for (Observador o : observadores) {
+            o.atualizar();
+        }
+    }
+    // ==========================================
+
     // função simples para sempre girar os dois dados ao mesmo tempo
     public int[] rolarDados() {
-        return new int[]{dado1.rolar(), dado2.rolar()};
+        int[] resultado = new int[]{dado1.rolar(), dado2.rolar()};
+        notificarObservadores(); // ALTERAÇÃO: Notifica a View que os dados rolaram
+        return resultado;
+    }
+
+    // NOVA FUNÇÃO EXIGIDA NA 3ª ITERAÇÃO: Setar valores dos dados manualmente
+    public void setValoresDados(int v1, int v2) {
+        // Aqui apenas avisamos a interface gráfica que valores manuais foram definidos
+        notificarObservadores();
     }
 
     public String getJogadorDaVez() {
@@ -42,6 +78,7 @@ public class JogoClueInicio {
 
     public void passarTurno() {
         indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
+        notificarObservadores(); // ALTERAÇÃO: Notifica a View que o turno mudou
     }
 
     // no começo do jogo dá nome de um suspeito para cada um dos piões
@@ -65,7 +102,11 @@ public class JogoClueInicio {
 
             // 2. Se a casa clicada estiver na lista de casas permitidas, efetua o movimento
             if (casasPermitidas.contains(destino)) {
-                return tabuleiro.moverPiao(piao, destino);
+                boolean sucesso = tabuleiro.moverPiao(piao, destino);
+                if (sucesso) {
+                    notificarObservadores(); // ALTERAÇÃO: Notifica a View que o pião se moveu com sucesso!
+                }
+                return sucesso;
             }
         }
         // Retorna falso se o clique foi longe demais, numa parede, ou fora do tabuleiro
@@ -124,6 +165,7 @@ public class JogoClueInicio {
                 jogadorAtual = 1;
             }
         }
+        notificarObservadores(); // ALTERAÇÃO: Notifica a View que a partida foi preparada
     }
 
     // Cria as cartas com os nomes originais do Clue, em seus respectivos tipos.
@@ -145,12 +187,12 @@ public class JogoClueInicio {
 
         // Coordenadas reais mapeadas [Linha, Coluna] com base na grelha 25x24 da imagem:
         int[][] posicoesIniciais = {
-                {24, 7},  // Srta. Rose (Base do tabuleiro, entre Sala de Estar e Entrada)
-                {17, 0},  // Coronel Mostarda (Lado esquerdo)
-                {19, 23}, // Professor Plum (Lado direito)
-                {0, 14},  // Sr. Marinho (Topo do tabuleiro)
-                {6, 23},  // Dona Violeta (Lado direito superior)
-                {0, 9}    // Dona Branca (Topo do tabuleiro)
+                {24, 7},  // Srta. Rose
+                {17, 0},  // Coronel Mostarda
+                {19, 23}, // Professor Plum
+                {0, 14},  // Sr. Marinho
+                {6, 23},  // Dona Violeta
+                {0, 9}    // Dona Branca
         };
 
         for (int i = 0; i < nomesSuspeitos.length; i++) {
@@ -185,5 +227,15 @@ public class JogoClueInicio {
     }
     Piao getPiao(String nome) {
         return pioes.get(nome);
+    }
+
+    // Encaminha o pedido de passagem secreta tratando a busca do peão internamente
+    public boolean moverPorPassagemSecreta(String nomeJogador) {
+        // A própria fachada recupera o peão de forma segura dentro do pacote model
+        Piao piao = pioes.get(nomeJogador);
+        if (piao != null) {
+            return tabuleiro.moverPorPassagemSecreta(piao);
+        }
+        return false;
     }
 }

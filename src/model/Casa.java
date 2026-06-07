@@ -12,6 +12,7 @@ class Casa {
         this.y = y;
         this.tipo = tipo;
         this.piaoOcupante = null;
+        this.nomeComodo = null; // Inicializa vazio
     }
 
     // comandos para incializar os comodos

@@ -1,6 +1,7 @@
 package view;
 
 import model.JogoClueInicio; // Importa a fachada do Model
+import controller.ControllerClue; // ALTERAÇÃO 1: Importa o Controller
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,14 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 
-
-
 public class PainelTabuleiro extends JPanel {
     private Image imagemTabuleiro;
     private int passosDisponiveis = 0;
     private Map<String, Image> imagensPeoes = new HashMap<>();
-
-    // Dentro do seu PainelTabuleiro.java, ajuste estas variáveis:
 
     // 1. Defina o tamanho da grade (confirme se é 24x24 ou 25x24)
     private final int totalLinhas = 25;
@@ -33,17 +30,18 @@ public class PainelTabuleiro extends JPanel {
     private final float propLarguraCasa = 48.0f / 1350.0f;
     private final float propAlturaCasa = 31.0f / 900.0f;
 
-
-
     // NOVO: Referência ao jogo (Controller/Model) e controle de turno
     private JogoClueInicio jogo;
     private String jogadorDaVez = "Srta. Rose"; // Ajuste conforme a lógica de turnos
+    private JanelaPrincipal janelaPai;
 
     // Mapeamento dos nomes do Model para os nomes das imagens (como Scarlet virou Srta. Rose no seu Model)
     private Map<String, String> mapeamentoNomesImagens = new HashMap<>();
 
-    public PainelTabuleiro(JogoClueInicio jogo) {
+    // CORREÇÃO: Construtor agora recebe JogoClueInicio e JanelaPrincipal
+    public PainelTabuleiro(JogoClueInicio jogo, JanelaPrincipal janelaPai) {
         this.jogo = jogo; // Injeta o jogo!
+        this.janelaPai = janelaPai; // Inicializa o campo corretamente
 
         // Carrega o tabuleiro
         try {
@@ -80,14 +78,19 @@ public class PainelTabuleiro extends JPanel {
                 int colunaLogica = (int) ((e.getX() - margemEsq) / larguraCasa);
                 int linhaLogica = (int) ((e.getY() - margemTop) / alturaCasa);
 
-                System.out.println("Tentando mover " + jogadorDaVez + " para [" + linhaLogica + "][" + colunaLogica + "]");
+                // ALTERAÇÃO 2: Pega o jogador exato da vez direto do Model
+                String jogadorDaVezAtual = jogo.getJogadorDaVez();
+                System.out.println("Tentando mover " + jogadorDaVezAtual + " para [" + linhaLogica + "][" + colunaLogica + "]");
 
-                // CONTROLLER REAL: Manda a requisição de movimento para a sua fachada JogoClueInicio
-                boolean movimentoValido = jogo.deslocarPiao(jogadorDaVez, linhaLogica, colunaLogica, passosDisponiveis);
+                // ALTERAÇÃO 3: DELEGAÇÃO PARA O CONTROLLER!
+                // A View não dá mais ordens ao Model. Ela pede para o Controller agir!
+                boolean movimentoValido = ControllerClue.getInstancia().moverPiao(jogadorDaVezAtual, linhaLogica, colunaLogica, passosDisponiveis);
+
                 if (movimentoValido) {
-                    System.out.println("Peão movido com sucesso no Model!");
+                    System.out.println("Peão movido com sucesso pelo Controller!");
                     passosDisponiveis = 0; // Gastou a jogada
-                    repaint(); // Redesenha a tela com as novas posições
+                    // MÁGICA DO OBSERVER: Removemos o repaint() daqui!
+                    // A JanelaPrincipal é que vai dar o repaint automaticamente após ser notificada.
                 } else {
                     System.out.println("Movimento inválido. Ignorando.");
                 }
@@ -125,7 +128,9 @@ public class PainelTabuleiro extends JPanel {
         // Pega todos os suspeitos ativos no seu jogo e desenha eles
         if (jogo != null) {
             for (String nomeSuspeito : jogo.getNomesSuspeitos()) {
+
                 int[] coords = jogo.getCoordenadasPiao(nomeSuspeito);
+                System.out.println("DEBUG PEÃO: " + nomeSuspeito + " está na coordenada " + java.util.Arrays.toString(coords));
 
                 if (coords != null) {
                     int piaoLinha = coords[0]; // X na sua lógica

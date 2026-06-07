@@ -2,6 +2,9 @@ package view;
 
 import javax.swing.*;
 
+// NOVAS IMPORTAÇÕES PARA OS PADRÕES DE PROJETO
+import controller.ControllerClue;
+import observer.Observador;
 import model.JogoClueInicio;
 
 import java.awt.*;
@@ -11,7 +14,8 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class JanelaPrincipal extends JFrame {
+// ALTERAÇÃO 1: A classe agora implementa a interface Observador
+public class JanelaPrincipal extends JFrame implements Observador {
 
     private PainelTabuleiro painelTabuleiro;
     private JComboBox<Integer> boxDado1;
@@ -21,6 +25,9 @@ public class JanelaPrincipal extends JFrame {
     private JLabel labelJogador;
     private JPanel painelDadosImagens;
     private JogoClueInicio partida;
+
+    // ALTERAÇÃO 2: A View agora tem uma referência para o Controller
+    private ControllerClue controller;
 
     // Dentro de JanelaPrincipal.java
     public static void main(String[] args) {
@@ -34,17 +41,21 @@ public class JanelaPrincipal extends JFrame {
 
     public JanelaPrincipal() {
         // Configurações obrigatórias exigidas pelo enunciado
-        setTitle("Clue - Detetive | Segunda Iteração");
+        setTitle("Clue - Detetive | Terceira Iteração");
         setSize(1350, 900); // Confortavelmente abaixo do limite máximo de 1400x1050
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // CORREÇÃO: Removido o tipo 'model.JogoClueInicio' para inicializar o campo da classe
-        this.partida = new model.JogoClueInicio();
+        // ALTERAÇÃO 3: Em vez de dar 'new' no Model, pegamos a instância pelo Controller
+        this.controller = ControllerClue.getInstancia();
+        this.partida = controller.getModel();
 
-        // Passa o Model para dentro da View (O Tabuleiro)
-        painelTabuleiro = new PainelTabuleiro(partida);
+        // ALTERAÇÃO 4: Registra esta janela como um observador (Padrão Observer)
+        this.controller.registrarObservador(this);
+
+        // MUDANÇA AQUI: Passamos o Model (partida) e a própria Janela (this) para o Tabuleiro
+        painelTabuleiro = new PainelTabuleiro(partida, this);
         add(new JScrollPane(painelTabuleiro), BorderLayout.CENTER);
 
         // Painel de Controle Lateral (Leste)
@@ -61,14 +72,14 @@ public class JanelaPrincipal extends JFrame {
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Seletores de dados (Dados Viciados de Teste)
-        painelLateral.add(new JLabel("Dado 1:"));
+        painelLateral.add(new JLabel("Dado 1 (Teste):"));
         Integer[] faces = {1, 2, 3, 4, 5, 6};
         boxDado1 = new JComboBox<>(faces);
         painelLateral.add(boxDado1);
 
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        painelLateral.add(new JLabel("Dado 2:"));
+        painelLateral.add(new JLabel("Dado 2 (Teste):"));
         boxDado2 = new JComboBox<>(faces);
         painelLateral.add(boxDado2);
 
@@ -85,25 +96,86 @@ public class JanelaPrincipal extends JFrame {
 
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        JButton botaoDados = new JButton("Lançar Dados");{
+        // ========================================================
+        // ADIÇÃO CIRÚRGICA DOS BOTÕES DE AÇÃO (3ª ITERAÇÃO)
+        // ========================================================
 
-            botaoDados.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    int d1 = (Integer) boxDado1.getSelectedItem();
-                    int d2 = (Integer) boxDado2.getSelectedItem();
-                    int totalPassos = d1 + d2;
+        // 1. Botão para rolar os dados de forma completamente aleatória (Mecânica de Sorte)
+        JButton botaoRolarSorte = new JButton("Rolar Dados (Sorte)");
+        botaoRolarSorte.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] dados = controller.rolarDadosAleatorios();
+                int d1 = dados[0];
+                int d2 = dados[1];
+                int totalPassos = d1 + d2;
 
-                    painelTabuleiro.setPassosDisponiveis(totalPassos);
-                    atualizarImagensDosDados(d1, d2);
+                painelTabuleiro.setPassosDisponiveis(totalPassos);
+                atualizarImagensDosDados(d1, d2);
+            }
+        });
+        painelLateral.add(botaoRolarSorte);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // 2. Botão de Definir Dados (Mecanismo viciado exigido pelo professor para testar)
+        JButton botaoDadosTeste = new JButton("Definir Dados (Teste)");
+        botaoDadosTeste.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int d1 = (Integer) boxDado1.getSelectedItem();
+                int d2 = (Integer) boxDado2.getSelectedItem();
+                int totalPassos = d1 + d2;
+
+                painelTabuleiro.setPassosDisponiveis(totalPassos);
+                atualizarImagensDosDados(d1, d2);
+
+                // Avisar o controller que os dados manuais foram setados
+                controller.rolarDados(d1, d2);
+            }
+        });
+        painelLateral.add(botaoDadosTeste);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // 3. Botão de ativação de Passagem Secreta
+        JButton botaoPassagem = new JButton("Usar Passagem Secreta");
+        botaoPassagem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String jogadorAtual = partida.getJogadorDaVez();
+                boolean viajou = controller.usarPassagemSecreta(jogadorAtual);
+
+                if (viajou) {
+                    painelTabuleiro.setPassosDisponiveis(0); // Zera o movimento pois usou a passagem
+                    JOptionPane.showMessageDialog(JanelaPrincipal.this,
+                            jogadorAtual + " utilizou com sucesso as passagens secretas da mansão!",
+                            "Passagem Secreta", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(JanelaPrincipal.this,
+                            "Ação Inválida! Você precisa estar nos cômodos dos cantos (Cozinha, Escritório, Sala de Estar ou Jardim de Inverno) para usar passagens.",
+                            "Bloqueio de Movimento", JOptionPane.WARNING_MESSAGE);
                 }
-            });
-            painelLateral.add(botaoDados);
-            add(painelLateral, BorderLayout.EAST);
+            }
+        });
+        painelLateral.add(botaoPassagem);
 
-            atualizarTurnoVisual();
-        }
+        add(painelLateral, BorderLayout.EAST);
+
+        // ALTERAÇÃO 6: Garante que as cartas são distribuídas na inicialização da janela
+        controller.iniciarPartida(6);
+
+        atualizarTurnoVisual();
     }
+
+    // ==========================================
+    // ALTERAÇÃO 7: Método obrigatório da interface Observador
+    // Quando o Model mudar, ele chama esse método automaticamente.
+    // ==========================================
+    @Override
+    public void atualizar() {
+        atualizarTurnoVisual();
+        painelTabuleiro.repaint(); // Manda o tabuleiro se redesenhar sozinho
+    }
+    // ==========================================
 
     public void atualizarTurnoVisual() {
         String jogador = partida.getJogadorDaVez();
@@ -113,7 +185,6 @@ public class JanelaPrincipal extends JFrame {
         painelDadosImagens.setBackground(obterCorDoJogador(jogador));
         painelDadosImagens.repaint();
     }
-
 
     // Metodo auxiliar da View para mapear os nomes às cores do Swing
     private Color obterCorDoJogador(String nomeJogador) {
@@ -142,7 +213,7 @@ public class JanelaPrincipal extends JFrame {
             Image img2 = ImageIO.read(new File("resources/Tabuleiros/dado" + valorD2 + ".jpg"));
             labelImagemDado1.setIcon(new ImageIcon(img1.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
             labelImagemDado2.setIcon(new ImageIcon(img2.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
-        }       catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Erro ao carregar imagens dos dados: verifique o caminho resources/Tabuleiros/");
         }
     }
