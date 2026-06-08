@@ -23,6 +23,12 @@ public class JogoClueInicio implements Observado {
     // NOVA VARIÁVEL: Lista que guarda quem está "escutando" as mudanças (a View)
     private List<Observador> observadores = new ArrayList<>();
 
+    public List<Carta> getCartasDoJogadorAtual() {
+        // indiceTurnoAtual é 0-based (0 a 5). As chaves do seu maosJogadores são 1-based (1 a 6).
+        int idJogador = this.indiceTurnoAtual + 1;
+        return maosJogadores.getOrDefault(idJogador, new ArrayList<>());
+    }
+    
     // Inicializa todas as diferentes funcionalidades para o Jogo
     public JogoClueInicio() {
         this.dado1 = new Dado();
@@ -238,4 +244,6 @@ public class JogoClueInicio implements Observado {
         }
         return false;
     }
+
+    
 }
