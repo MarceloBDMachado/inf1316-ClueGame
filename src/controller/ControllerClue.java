@@ -7,8 +7,6 @@ import java.util.List;
 public class ControllerClue {
     // 1. Padrão Singleton: Instância única estática
     private static ControllerClue instancia;
-
-    // O Controller conhece o Model (Façade)
     private JogoClueInicio jogoFacade;
 
     // 2. Padrão Singleton: Construtor privado (ninguém pode dar 'new' de fora)
@@ -47,11 +45,7 @@ public class ControllerClue {
         return sucesso;
     }
 
-    // ========================================================
-    // MÉTODOS ADICIONADOS PARA A 3ª ITERAÇÃO
-    // ========================================================
-
-    // Método para rolar os dados aleatoriamente (Mecânica de Sorte do Jogo Real)
+    // Método para rolar os dados aleatoriamente
     public int[] rolarDadosAleatorios() {
         return jogoFacade.rolarDados();
     }
@@ -66,13 +60,10 @@ public class ControllerClue {
         return sucesso;
     }
 
-    // ========================================================
-    // SOLUÇÃO PARA O ENCAPSULAMENTO DAS CARTAS (CORRIGIDO)
-    // ========================================================
 
-    // O Controller pede à Fachada (que está no Model) as cartas já formatadas como texto.
+    // O Controller pede à Fachada as cartas já formatadas como texto
     public List<String[]> obterDadosCartasDoJogadorAtual() {
-        // CORREÇÃO: Chamando o nome correto do método que está na fachada do Model
+        // Chamando o nome correto do método que está na fachada do Model
         return jogoFacade.obterDadosCartasDoJogadorAtual();
     }
 
@@ -81,9 +72,6 @@ public class ControllerClue {
         return jogoFacade;
     }
 
-    // ========================================================
-    // MÉTODOS PARA PALPITE E ACUSAÇÃO (3ª ITERAÇÃO)
-    // ========================================================
 
     // Recebe o palpite da View e envia para o Model
     public String[] fazerPalpite(String suspeito, String arma, String comodo) {

@@ -14,19 +14,16 @@ public class JanelaBlocoNotas extends JDialog {
         setLocationRelativeTo(pai);
         setLayout(new GridLayout(1, 3, 10, 10));
 
-        // Acessa o Controller Singleton
         ControllerClue controller = ControllerClue.getInstancia();
 
-        // Pega as cartas da mão do jogador atual como texto (Array de Strings)
-        // Substitua pelo nome exato do método que está no seu Controller
+        // Pega as cartas da mão do jogador atual como texto
         List<String[]> cartasNaMao = controller.obterDadosCartasDoJogadorAtual();
 
         List<String> nomesCartasMao = new ArrayList<>();
 
-        // Verificação de segurança (evita NullPointerException se a mão estiver vazia)
         if (cartasNaMao != null) {
             for (String[] c : cartasNaMao) {
-                nomesCartasMao.add(c[0]); // Pega apenas o nome textual da carta
+                nomesCartasMao.add(c[0]);
             }
         }
 
@@ -50,12 +47,10 @@ public class JanelaBlocoNotas extends JDialog {
         painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
         painel.setBorder(BorderFactory.createTitledBorder(titulo));
 
-        // Segurança adicional caso os itens venham nulos do Model
         if (itens != null) {
             for (String item : itens) {
                 JCheckBox box = new JCheckBox(item);
 
-                // MECÂNICA DE AUTO-CHECK: Se a carta está na mão do jogador, já nasce marcada em azul!
                 if (nomesCartasMao.contains(item)) {
                     box.setSelected(true);
                     box.setForeground(Color.BLUE); // Destaque para diferenciar das anotações normais
