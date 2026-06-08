@@ -2,6 +2,7 @@ package controller;
 
 import model.JogoClueInicio;
 import observer.Observador;
+import java.util.List; // IMPORTANTE: Necessário para retornar a lista de cartas
 
 public class ControllerClue {
     // 1. Padrão Singleton: Instância única estática
@@ -65,6 +66,12 @@ public class ControllerClue {
         }
         return sucesso;
     }
+
+    // Solicita os dados textuais das cartas do jogador da vez sem violar o encapsulamento
+    public List<String[]> getCartasJogadorDaVez() {
+        return jogoFacade.getCartasJogadorDaVez();
+    }
+
     // Retorna a Façade para a View apenas pegar informações (getters)
     public JogoClueInicio getModel() {
         return jogoFacade;

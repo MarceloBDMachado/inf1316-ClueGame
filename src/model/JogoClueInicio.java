@@ -238,4 +238,24 @@ public class JogoClueInicio implements Observado {
         }
         return false;
     }
+
+    // ========================================================
+    // EXPORTAÇÃO SEGURA DE CARTAS PARA A VIEW (3ª ITERAÇÃO)
+    // Retorna uma lista de String[], onde index 0 = Nome e index 1 = Tipo
+    // ========================================================
+    public List<String[]> getCartasJogadorDaVez() {
+        // O id do jogador na sua lógica de mapeamento de mãos é (indiceTurnoAtual + 1)
+        int idJogador = indiceTurnoAtual + 1;
+        List<Carta> cartasReais = maosJogadores.get(idJogador);
+        List<String[]> dadosExportacao = new ArrayList<>();
+
+        if (cartasReais != null) {
+            for (Carta c : cartasReais) {
+                // Como estamos dentro do pacote model, temos total permissão de ler os getters da Carta
+                dadosExportacao.add(new String[]{ c.getNome(), c.getTipo().toString() });
+            }
+        }
+        return dadosExportacao;
+    }
+
 }

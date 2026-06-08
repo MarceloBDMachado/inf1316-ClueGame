@@ -239,4 +239,5 @@ public class JanelaPrincipal extends JFrame implements Observador {
             System.out.println("Erro ao carregar imagens dos dados: verifique o caminho resources/Tabuleiros/");
         }
     }
+    
 }
