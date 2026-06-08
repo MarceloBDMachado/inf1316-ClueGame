@@ -172,7 +172,7 @@ public class JogoClueInicio implements Observado {
     private void inicializarCartas() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
-        String[] nomesComodos = {"Cozinha", "Salão de Festas", "Salão de Jogos", "Biblioteca", "Escritório", "Sala de Estar", "Sala de Jantar", "Terraço", "Hall"};
+        String[] nomesComodos = {"Cozinha", "Sala de Musica", "Salão de Jogos", "Biblioteca", "Escritório", "Sala de Estar", "Sala de Jantar", "Jardim de Inverno", "Entrada"};
 
         // Pegamos os arrays com os nomes originais do Clue e, para cada nome, damos um new Carta.
         // Em seguida, usamos o metodo put para salvar essa carta no nosso HashMap do baralho
