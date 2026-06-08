@@ -33,10 +33,10 @@ public class JanelaCartas extends JDialog {
         labelTitulo.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
         add(labelTitulo, BorderLayout.NORTH);
 
-        // 2. Instancia o Painel Customizado que usará Java2D
+        // 2. Instancia o Painel Customizado
         painelVisual = new PainelVisualCartas(cartas);
 
-        // 3. Coloca o painel dentro de um JScrollPane para comportar muitas cartas
+        // 3. Coloca o painel dentro de um JScrollPane
         JScrollPane scrollPane = new JScrollPane(painelVisual);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -46,10 +46,7 @@ public class JanelaCartas extends JDialog {
         setVisible(true);
     }
 
-    // ========================================================
-    // PAINEL INTERNO: Renderiza as cartas usando exclusivamente Java2D e drawImage()
-    // Isso evita o uso de JLabel/JPanel internos para as imagens, respeitando as regras.
-    // ========================================================
+
     private class PainelVisualCartas extends JPanel {
         private List<String[]> cartas;
         private Map<String, Image> cacheImagens = new HashMap<>();
@@ -63,7 +60,6 @@ public class JanelaCartas extends JDialog {
             this.cartas = cartas;
 
             // Define o tamanho preferencial do painel com base no número de cartas
-            // para que a barra de rolagem horizontal funcione corretamente
             int qtdCartas = (cartas == null) ? 0 : cartas.size();
             int larguraNecessaria = ESPACAMENTO + (qtdCartas * (CARTA_LARGURA + ESPACAMENTO));
             setPreferredSize(new Dimension(Math.max(larguraNecessaria, 680), 200));
@@ -95,7 +91,6 @@ public class JanelaCartas extends JDialog {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
 
-            // Suaviza o desenho das bordas e textos
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             if (cartas == null || cartas.isEmpty()) {
@@ -112,17 +107,14 @@ public class JanelaCartas extends JDialog {
                 String nomeCarta = c[0];
                 String tipoCarta = c[1];
                 Image img = cacheImagens.get(nomeCarta);
-
-                // Desenha a borda preta da carta
+                
                 g2d.setColor(Color.BLACK);
                 g2d.setStroke(new BasicStroke(2));
                 g2d.drawRect(posX, posY, CARTA_LARGURA, CARTA_ALTURA);
 
                 if (img != null) {
-                    // DESENHA A IMAGEM VIA METODO drawImage() DO JAVA2D (REGRA DO PDF)
                     g2d.drawImage(img, posX + 2, posY + 2, CARTA_LARGURA - 4, CARTA_ALTURA - 4, this);
                 } else {
-                    // FALLBACK: Se não achar a imagem, desenha o texto dentro do retângulo da carta
                     g2d.setColor(Color.BLACK);
                     g2d.setFont(new Font("Arial", Font.BOLD, 12));
 
@@ -145,9 +137,6 @@ public class JanelaCartas extends JDialog {
         }
     }
 
-    // ========================================================
-    // MÉTODO TRADUTOR: Conecta o nome do Model ao arquivo real
-    // ========================================================
     private String obterCaminhoImagemCarta(String nomeCarta) {
         switch (nomeCarta) {
             case "Srta. Rose": return "resources/Suspeitos/Scarlet.jpg";
