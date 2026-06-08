@@ -105,16 +105,13 @@ public class JanelaCartas extends JDialog {
 
             // CÔMODOS (Trata as diferenças de nomeação entre o Model e os Arquivos)
             case "Cozinha": return "resources/Comodos/Cozinha.jpg";
-            case "Salão de Festas": // Se tiver no baralho original
             case "Sala de Música": return "resources/Comodos/SalaDeMusica.jpg";
             case "Salão de Jogos": return "resources/Comodos/SalaoDeJogos.jpg";
             case "Biblioteca": return "resources/Comodos/Biblioteca.jpg";
             case "Escritório": return "resources/Comodos/Escritorio.jpg";
             case "Sala de Estar": return "resources/Comodos/SalaDeEstar.jpg";
             case "Sala de Jantar": return "resources/Comodos/SalaDeJantar.jpg";
-            case "Terraço": // Se tiver no baralho original
             case "Jardim de Inverno": return "resources/Comodos/JardimInverno.jpg";
-            case "Hall": // Se tiver no baralho original
             case "Entrada": return "resources/Comodos/Entrada.jpg";
 
             default: return null;
