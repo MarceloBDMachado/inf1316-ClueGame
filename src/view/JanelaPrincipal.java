@@ -71,6 +71,17 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(labelJogador);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        // Adiciona checklist para o jogador
+        JButton botaoNotas = new JButton("Bloco de Notas");
+        botaoNotas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new JanelaBlocoNotas(JanelaPrincipal.this);
+            }
+        });
+        painelLateral.add(botaoNotas);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
+
         // Seletores de dados (Dados Viciados de Teste)
         painelLateral.add(new JLabel("Dado 1 (Teste):"));
         Integer[] faces = {1, 2, 3, 4, 5, 6};
