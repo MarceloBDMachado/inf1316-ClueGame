@@ -76,4 +76,8 @@ public class ControllerClue {
     public JogoClueInicio getModel() {
         return jogoFacade;
     }
+
+    public java.util.List<model.Carta> obterCartasDoJogadorAtual() {
+        return jogoFacade.getCartasDoJogadorAtual();
+    }
 }
