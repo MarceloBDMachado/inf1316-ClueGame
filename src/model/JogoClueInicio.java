@@ -181,6 +181,31 @@ public class JogoClueInicio implements Observado {
         for (String c : nomesComodos) baralho.put(c, new Carta(c, TipoCarta.COMODO));
     }
 
+    // GETTERS DINÂMICOS DA FAÇADE PARA O BLOCO DE NOTAS
+    public List<String> getNomesSuspeitos() {
+        List<String> lista = new ArrayList<>();
+        for (Carta c : baralho.values()) {
+            if (c.getTipo() == TipoCarta.SUSPEITO) lista.add(c.getNome());
+        }
+        return lista;
+    }
+
+    public List<String> getNomesArmas() {
+        List<String> lista = new ArrayList<>();
+        for (Carta c : baralho.values()) {
+            if (c.getTipo() == TipoCarta.ARMA) lista.add(c.getNome());
+        }
+        return lista;
+    }
+
+    public List<String> getNomesComodos() {
+        List<String> lista = new ArrayList<>();
+        for (Carta c : baralho.values()) {
+            if (c.getTipo() == TipoCarta.COMODO) lista.add(c.getNome());
+        }
+        return lista;
+    }
+
     // Cria os piões e coloca-os nas coordenadas iniciais correctas do tabuleiro clássico (25 linhas x 24 colunas).
     private void inicializarPioes() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
