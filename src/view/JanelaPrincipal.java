@@ -100,7 +100,29 @@ public class JanelaPrincipal extends JFrame implements Observador {
         // ADIÇÃO CIRÚRGICA DOS BOTÕES DE AÇÃO (3ª ITERAÇÃO)
         // ========================================================
 
-        // 1. Botão para rolar os dados de forma completamente aleatória (Mecânica de Sorte)
+        // 1. Botao para mostrar as cartas na sua mao
+        JButton botaoCartas = new JButton("Mostrar Cartas");
+        botaoCartas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new JanelaCartas(JanelaPrincipal.this);
+            }
+        });
+        painelLateral.add(botaoCartas);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        // 2. Botao para ver a checklist do jogador
+        JButton botaoNotas = new JButton("Bloco de Notas");
+        botaoNotas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new JanelaBlocoNotas(JanelaPrincipal.this);
+            }
+        });
+        painelLateral.add(botaoNotas);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // 3. Botão para rolar os dados de forma completamente aleatória (Mecânica de Sorte)
         JButton botaoRolarSorte = new JButton("Rolar Dados (Sorte)");
         botaoRolarSorte.addActionListener(new ActionListener() {
             @Override
@@ -136,7 +158,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoDadosTeste);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // 3. Botão de ativação de Passagem Secreta
+        // 4. Botão de ativação de Passagem Secreta
         JButton botaoPassagem = new JButton("Usar Passagem Secreta");
         botaoPassagem.addActionListener(new ActionListener() {
             @Override
