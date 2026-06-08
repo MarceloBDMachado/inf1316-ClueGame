@@ -19,6 +19,7 @@ public class JogoClueInicio implements Observado {
     private Envelope envelopeConfidencial;
     private final List<String> ordemJogadores = Arrays.asList("Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca");
     private int indiceTurnoAtual = 0;
+    private List<String> jogadoresEliminados = new ArrayList<>();
 
     // NOVA VARIÁVEL: Lista que guarda quem está "escutando" as mudanças (a View)
     private List<Observador> observadores = new ArrayList<>();
@@ -227,11 +228,6 @@ public class JogoClueInicio implements Observado {
             pioes.put(nomesSuspeitos[i], novoPiao);
         }
     }
-    // Retorna a lista de nomes dos suspeitos para a View conseguir iterar e desenhar
-    public List<String> getNomesSuspeitos() {
-        return new ArrayList<>(pioes.keySet());
-    }
-
     // Retorna a posição (linha e coluna) de um pião específico para a View desenhar
     // Retorna um array onde o index 0 é a Linha (X) e index 1 é a Coluna (Y)
     public int[] getCoordenadasPiao(String nomeSuspeito) {
@@ -268,19 +264,95 @@ public class JogoClueInicio implements Observado {
     // EXPORTAÇÃO SEGURA DE CARTAS PARA A VIEW (3ª ITERAÇÃO)
     // Retorna uma lista de String[], onde index 0 = Nome e index 1 = Tipo
     // ========================================================
-    public List<String[]> getCartasJogadorDaVez() {
-        // O id do jogador na sua lógica de mapeamento de mãos é (indiceTurnoAtual + 1)
-        int idJogador = indiceTurnoAtual + 1;
-        List<Carta> cartasReais = maosJogadores.get(idJogador);
-        List<String[]> dadosExportacao = new ArrayList<>();
+    public List<String[]> obterDadosCartasDoJogadorAtual() {
+        // Chama o nosso método privado (criado logo abaixo) para pegar os objetos Carta
+        List<Carta> cartasDoJogador = buscarCartasDoJogadorAtualInterno();
+        List<String[]> dadosDasCartas = new ArrayList<>();
 
-        if (cartasReais != null) {
-            for (Carta c : cartasReais) {
-                // Como estamos dentro do pacote model, temos total permissão de ler os getters da Carta
-                dadosExportacao.add(new String[]{ c.getNome(), c.getTipo().toString() });
+        if (cartasDoJogador != null) {
+            for (Carta c : cartasDoJogador) {
+                // Traduz o objeto privado para texto que a View pode ler
+                dadosDasCartas.add(new String[]{ c.getNome(), c.getTipo().toString() });
             }
         }
-        return dadosExportacao;
+        return dadosDasCartas;
+    }
+
+    // Método auxiliar PRIVADO (para não quebrar o encapsulamento).
+    // Ele faz a matemática para descobrir qual é a mão de cartas do jogador da vez.
+    private List<Carta> buscarCartasDoJogadorAtualInterno() {
+        // Se as cartas ainda não foram distribuídas, retorna vazio para não dar erro
+        if (maosJogadores == null || maosJogadores.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // O map "maosJogadores" usa chaves de 1 até numJogadores.
+        // O "indiceTurnoAtual" começa em 0. Essa matemática ajusta o índice para a chave correta.
+        int idJogadorAtual = (indiceTurnoAtual % maosJogadores.size()) + 1;
+
+        return maosJogadores.get(idJogadorAtual);
+    }
+    // ========================================================
+    // MECÂNICA 1: O PALPITE (SUGESTÃO)
+    // Retorna um Array: [0]=NomeDaCartaRefutada, [1]=TipoDaCarta, [2]=NomeDoJogadorQueMostrou
+    // Se ninguém tiver a carta, retorna null.
+    // ========================================================
+    public String[] realizarPalpite(String nomeAcusador, String suspeito, String arma, String comodo) {
+
+        // 1. Pela regra do Detetive, o peão do suspeito sugerido é "teleportado" para o cômodo
+        Piao piaoSuspeito = pioes.get(suspeito);
+        Piao piaoAcusador = pioes.get(nomeAcusador);
+        if (piaoSuspeito != null && piaoAcusador != null && piaoAcusador.getPosicaoAtual() != null) {
+            // Movemos o suspeito para a exata mesma casa onde o acusador está a fazer o palpite
+            tabuleiro.moverPiao(piaoSuspeito, piaoAcusador.getPosicaoAtual());
+            notificarObservadores(); // Atualiza o tabuleiro para mostrar o peão a ser puxado
+        }
+
+        // 2. Lógica de procurar nas mãos dos outros jogadores (no sentido dos ponteiros do relógio)
+        int numJogadoresJogando = maosJogadores.size();
+
+        // Começa do jogador atual (1 a numJogadores) e vai verificando os próximos
+        int idAcusador = (indiceTurnoAtual % numJogadoresJogando) + 1;
+
+        for (int i = 1; i < numJogadoresJogando; i++) {
+            // Calcula qual é o próximo jogador na roda
+            int idInspecionado = ((idAcusador - 1 + i) % numJogadoresJogando) + 1;
+
+            List<Carta> mao = maosJogadores.get(idInspecionado);
+            if (mao != null) {
+                for (Carta c : mao) {
+                    // Se o jogador tiver uma das 3 cartas do palpite, ele refuta!
+                    if (c.getNome().equals(suspeito) ||
+                            c.getNome().equals(arma) ||
+                            c.getNome().equals(comodo)) {
+
+                        // Descobre o nome do personagem do jogador que mostrou a carta
+                        String nomeJogadorQueMostrou = ordemJogadores.get(idInspecionado - 1);
+
+                        return new String[]{ c.getNome(), c.getTipo().toString(), nomeJogadorQueMostrou };
+                    }
+                }
+            }
+        }
+        // Se a roda deu a volta completa e ninguém tem nenhuma das 3 cartas:
+        return null;
+    }
+
+    // ========================================================
+    // MECÂNICA 2: A ACUSAÇÃO FINAL (CORRIGIDO)
+    // Verifica contra o Envelope Confidencial. Retorna TRUE se ganhou, FALSE se perdeu.
+    // ========================================================
+    public boolean realizarAcusacaoFinal(String nomeAcusador, String suspeito, String arma, String comodo) {
+        // O envelope agora resolve a comparação internamente de forma segura
+        boolean acertou = envelopeConfidencial.verificarSolucao(suspeito, arma, comodo);
+
+        if (acertou) {
+            return true; // Fim de jogo, este jogador ganhou!
+        } else {
+            jogadoresEliminados.add(nomeAcusador); // O jogador errou e é eliminado
+            passarTurno(); // Passa a vez automaticamente
+            return false;
+        }
     }
 
 }

@@ -11,4 +11,14 @@ class Envelope {
         this.crimeArma = arma;
         this.crimeComodo = comodo;
     }
+
+    // MÉTODO ADICIONADO: Compara os nomes textuais recebidos com as cartas secretas
+    boolean verificarSolucao(String suspeito, String arma, String comodo) {
+        if (crimeSuspeito == null || crimeArma == null || crimeComodo == null) {
+            return false;
+        }
+        return crimeSuspeito.getNome().equals(suspeito) &&
+                crimeArma.getNome().equals(arma) &&
+                crimeComodo.getNome().equals(comodo);
+    }
 }

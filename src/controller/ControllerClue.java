@@ -2,7 +2,7 @@ package controller;
 
 import model.JogoClueInicio;
 import observer.Observador;
-import java.util.List; // IMPORTANTE: Necessário para retornar a lista de cartas
+import java.util.List;
 
 public class ControllerClue {
     // 1. Padrão Singleton: Instância única estática
@@ -58,7 +58,6 @@ public class ControllerClue {
 
     // Método para acionar a passagem secreta do jogador da vez
     public boolean usarPassagemSecreta(String jogador) {
-        // Correção: Passamos apenas a String com o nome do jogador para a fachada
         boolean sucesso = jogoFacade.moverPorPassagemSecreta(jogador);
         if (sucesso) {
             // Se o teletransporte deu certo, força o turno a passar
@@ -67,9 +66,14 @@ public class ControllerClue {
         return sucesso;
     }
 
-    // Solicita os dados textuais das cartas do jogador da vez sem violar o encapsulamento
-    public List<String[]> getCartasJogadorDaVez() {
-        return jogoFacade.getCartasJogadorDaVez();
+    // ========================================================
+    // SOLUÇÃO PARA O ENCAPSULAMENTO DAS CARTAS (CORRIGIDO)
+    // ========================================================
+
+    // O Controller pede à Fachada (que está no Model) as cartas já formatadas como texto.
+    public List<String[]> obterDadosCartasDoJogadorAtual() {
+        // CORREÇÃO: Chamando o nome correto do método que está na fachada do Model
+        return jogoFacade.obterDadosCartasDoJogadorAtual();
     }
 
     // Retorna a Façade para a View apenas pegar informações (getters)
@@ -77,7 +81,19 @@ public class ControllerClue {
         return jogoFacade;
     }
 
-    public java.util.List<model.Carta> obterCartasDoJogadorAtual() {
-        return jogoFacade.getCartasDoJogadorAtual();
+    // ========================================================
+    // MÉTODOS PARA PALPITE E ACUSAÇÃO (3ª ITERAÇÃO)
+    // ========================================================
+
+    // Recebe o palpite da View e envia para o Model
+    public String[] fazerPalpite(String suspeito, String arma, String comodo) {
+        String jogadorAtual = jogoFacade.getJogadorDaVez();
+        return jogoFacade.realizarPalpite(jogadorAtual, suspeito, arma, comodo);
+    }
+
+    // Recebe a acusação da View e envia para o Model
+    public boolean fazerAcusacao(String suspeito, String arma, String comodo) {
+        String jogadorAtual = jogoFacade.getJogadorDaVez();
+        return jogoFacade.realizarAcusacaoFinal(jogadorAtual, suspeito, arma, comodo);
     }
 }

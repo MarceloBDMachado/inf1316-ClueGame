@@ -1,8 +1,8 @@
 package view;
 
-import javax.swing.;
+import javax.swing.*;
 import controller.ControllerClue;
-import java.awt.;
+import java.awt.*;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -17,13 +17,20 @@ public class JanelaBlocoNotas extends JDialog {
         // Acessa o Controller Singleton
         ControllerClue controller = ControllerClue.getInstancia();
 
-        // Pega as cartas da mão do jogador atual para o Auto-Check
-        List<String[]> cartasNaMao = controller.getCartasJogadorDaVez();
+        // Pega as cartas da mão do jogador atual como texto (Array de Strings)
+        // Substitua pelo nome exato do método que está no seu Controller
+        List<String[]> cartasNaMao = controller.obterDadosCartasDoJogadorAtual();
+
         List<String> nomesCartasMao = new ArrayList<>();
-        for (String[] c : cartasNaMao) {
-            nomesCartasMao.add(c[0]); // Pega apenas o nome textual da carta
+
+        // Verificação de segurança (evita NullPointerException se a mão estiver vazia)
+        if (cartasNaMao != null) {
+            for (String[] c : cartasNaMao) {
+                nomesCartasMao.add(c[0]); // Pega apenas o nome textual da carta
+            }
         }
-        // Gera as colunas puxando os nomes direto do Model (evita qualquer divergência)
+
+        // Gera as colunas puxando os nomes direto da Fachada no Model
         JPanel colSuspeitos = criarColunaDeNotas("Suspeitos", controller.getModel().getNomesSuspeitos(), nomesCartasMao);
         JPanel colArmas = criarColunaDeNotas("Armas", controller.getModel().getNomesArmas(), nomesCartasMao);
         JPanel colComodos = criarColunaDeNotas("Cômodos", controller.getModel().getNomesComodos(), nomesCartasMao);
@@ -43,16 +50,19 @@ public class JanelaBlocoNotas extends JDialog {
         painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
         painel.setBorder(BorderFactory.createTitledBorder(titulo));
 
-        for (String item : itens) {
-            JCheckBox box = new JCheckBox(item);
+        // Segurança adicional caso os itens venham nulos do Model
+        if (itens != null) {
+            for (String item : itens) {
+                JCheckBox box = new JCheckBox(item);
 
-            // MECÂNICA DE AUTO-CHECK: Se a carta está na mão do jogador, já nasce marcada em azul!
-            if (nomesCartasMao.contains(item)) {
-                box.setSelected(true);
-                box.setForeground(Color.BLUE); // Destaque para diferenciar das anotações normais
+                // MECÂNICA DE AUTO-CHECK: Se a carta está na mão do jogador, já nasce marcada em azul!
+                if (nomesCartasMao.contains(item)) {
+                    box.setSelected(true);
+                    box.setForeground(Color.BLUE); // Destaque para diferenciar das anotações normais
+                }
+
+                painel.add(box);
             }
-
-            painel.add(box);
         }
         return painel;
     }
