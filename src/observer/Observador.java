@@ -1,6 +1,6 @@
 package observer;
 
 public interface Observador {
-    // Metodo que será chamado toda vez que o Model mudar
+    // Chamado quando o Model mudar
     void atualizar();
 }

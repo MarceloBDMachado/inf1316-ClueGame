@@ -1,18 +1,19 @@
 package model;
 
-// IMPORTAÇÕES NOVAS PARA O PADRÃO OBSERVER
 import observer.Observado;
 import observer.Observador;
 
 import java.util.*;
 
-// ALTERAÇÃO: A classe agora implementa a interface Observado (Padrão Observer)
+/**
+ * Classe principal que gerencia a lógica de negócio do jogo.
+ * Implementa o padrão Observer para atualizar a View automaticamente quando o estado do jogo muda.
+ */
 public class JogoClueInicio implements Observado {
     private Dado dado1;
     private Dado dado2;
     private Tabuleiro tabuleiro;
 
-    //HashMap mapeando os piões, o baralho e as mãos dos jogadores
     private Map<String, Piao> pioes;
     private Map<String, Carta> baralho;
     private Map<Integer, List<Carta>> maosJogadores;
@@ -21,10 +22,8 @@ public class JogoClueInicio implements Observado {
     private int indiceTurnoAtual = 0;
     private List<String> jogadoresEliminados = new ArrayList<>();
 
-    // NOVA VARIÁVEL: Lista que guarda quem está "escutando" as mudanças (a View)
     private List<Observador> observadores = new ArrayList<>();
 
-    // Inicializa todas as diferentes funcionalidades para o Jogo
     public JogoClueInicio() {
         this.dado1 = new Dado();
         this.dado2 = new Dado();
@@ -38,9 +37,6 @@ public class JogoClueInicio implements Observado {
         inicializarPioes();
     }
 
-    // ==========================================
-    // IMPLEMENTAÇÃO DOS MÉTODOS DA INTERFACE OBSERVADO
-    // ==========================================
     @Override
     public void adicionarObservador(Observador o) {
         observadores.add(o);
@@ -53,23 +49,18 @@ public class JogoClueInicio implements Observado {
 
     @Override
     public void notificarObservadores() {
-        // Grita para todas as Views registradas: "Algo mudou, atualizem-se!"
         for (Observador o : observadores) {
             o.atualizar();
         }
     }
-    // ==========================================
 
-    // função simples para sempre girar os dois dados ao mesmo tempo
     public int[] rolarDados() {
         int[] resultado = new int[]{dado1.rolar(), dado2.rolar()};
-        notificarObservadores(); // ALTERAÇÃO: Notifica a View que os dados rolaram
+        notificarObservadores();
         return resultado;
     }
 
-    // NOVA FUNÇÃO EXIGIDA NA 3ª ITERAÇÃO: Setar valores dos dados manualmente
     public void setValoresDados(int v1, int v2) {
-        // Aqui apenas avisamos a interface gráfica que valores manuais foram definidos
         notificarObservadores();
     }
 
@@ -79,11 +70,9 @@ public class JogoClueInicio implements Observado {
 
     public void passarTurno() {
         indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
-        notificarObservadores(); // ALTERAÇÃO: Notifica a View que o turno mudou
+        notificarObservadores();
     }
 
-    // no começo do jogo dá nome de um suspeito para cada um dos piões
-    // passa o valor dos dados e a posição atual para fazer as casas alcançáveis
     public List<Casa> mapearCasasPossiveis(String nomeSuspeito, int valorDados) {
         Piao piao = pioes.get(nomeSuspeito);
         if (piao == null || piao.getPosicaoAtual() == null) {
@@ -92,72 +81,61 @@ public class JogoClueInicio implements Observado {
         return tabuleiro.mapearCasasAlcancaveis(piao.getPosicaoAtual(), valorDados);
     }
 
-    // Deslocamos o pião para a casa que for escolhida, APENAS se for alcançável
     public boolean deslocarPiao(String nomeSuspeito, int xDestino, int yDestino, int passos) {
         Piao piao = pioes.get(nomeSuspeito);
         Casa destino = tabuleiro.getCasa(xDestino, yDestino);
 
         if (piao != null && destino != null) {
-            // 1. Usa a sua própria função para descobrir onde ele pode ir com os passos do dado
             List<Casa> casasPermitidas = mapearCasasPossiveis(nomeSuspeito, passos);
 
-            // 2. Se a casa clicada estiver na lista de casas permitidas, efetua o movimento
             if (casasPermitidas.contains(destino)) {
                 boolean sucesso = tabuleiro.moverPiao(piao, destino);
                 if (sucesso) {
-                    notificarObservadores(); // ALTERAÇÃO: Notifica a View que o pião se moveu com sucesso!
+                    notificarObservadores();
                 }
                 return sucesso;
             }
         }
-        // Retorna falso se o clique foi longe demais, numa parede, ou fora do tabuleiro
         return false;
     }
 
     public void prepararPartida(int numJogadores) {
-        // controle de erro caso descumpra a regra de número de jogadores
-        if(numJogadores < 3 || numJogadores > 6) { // Throw é um botão de abortar caso de este erro
+        if(numJogadores < 3 || numJogadores > 6) {
             throw new IllegalArgumentException("número de jogadores inválido");
         }
 
-        // separa as cartas para sortear
         List<Carta> suspeitos = new ArrayList<>();
         List<Carta> armas = new ArrayList<>();
         List<Carta> comodos = new ArrayList<>();
 
-        // separamos as cartas por tipo e as adicionamos a c
         for (Carta c : baralho.values()) {
             if (c.getTipo() == TipoCarta.SUSPEITO) suspeitos.add(c);
             else if (c.getTipo() == TipoCarta.ARMA) armas.add(c);
             else if (c.getTipo() == TipoCarta.COMODO) comodos.add(c);
         }
 
-        // Embaralha tudo com o metodo shuffle
         Collections.shuffle(suspeitos);
         Collections.shuffle(armas);
         Collections.shuffle(comodos);
 
-        // Tira a primeira carta de cada pilha e esconde no envelope de resposta
+        // Define a solução secreta do jogo retirando uma carta de cada tipo
         envelopeConfidencial.definirSolucao(
                 suspeitos.remove(0),
                 armas.remove(0),
                 comodos.remove(0)
         );
 
-        // Junta o que sobrou, embaralha de novo e distribui para os jogadores
         List<Carta> cartasRestantes = new ArrayList<>();
         cartasRestantes.addAll(suspeitos);
         cartasRestantes.addAll(armas);
         cartasRestantes.addAll(comodos);
         Collections.shuffle(cartasRestantes);
 
-        // Inicializa a mão de cada jogador no nosso HashMap.
-        // Nós criamos um ArrayList vazio e associamos ao número do jogador
         for (int i = 1; i <= numJogadores; i++) {
             maosJogadores.put(i, new ArrayList<>());
         }
 
-        // aqui distribuimos uma carta de cada vez para cada jogador até acabarem as cartas.
+        // Distribuição circular das cartas restantes entre os jogadores ativos
         int jogadorAtual = 1;
         for (Carta c : cartasRestantes) {
             maosJogadores.get(jogadorAtual).add(c);
@@ -166,23 +144,19 @@ public class JogoClueInicio implements Observado {
                 jogadorAtual = 1;
             }
         }
-        notificarObservadores(); // ALTERAÇÃO: Notifica a View que a partida foi preparada
+        notificarObservadores();
     }
 
-    // Cria as cartas com os nomes originais do Clue, em seus respectivos tipos.
     private void inicializarCartas() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
         String[] nomesArmas = {"Corda", "Cano de Ferro", "Faca", "Chave Inglesa", "Castiçal", "Pistola"};
         String[] nomesComodos = {"Cozinha", "Sala de Musica", "Salão de Jogos", "Biblioteca", "Escritório", "Sala de Estar", "Sala de Jantar", "Jardim de Inverno", "Entrada"};
 
-        // Pegamos os arrays com os nomes originais do Clue e, para cada nome, damos um new Carta.
-        // Em seguida, usamos o metodo put para salvar essa carta no nosso HashMap do baralho
         for (String s : nomesSuspeitos) baralho.put(s, new Carta(s, TipoCarta.SUSPEITO));
         for (String a : nomesArmas) baralho.put(a, new Carta(a, TipoCarta.ARMA));
         for (String c : nomesComodos) baralho.put(c, new Carta(c, TipoCarta.COMODO));
     }
 
-    // GETTERS DINÂMICOS DA FAÇADE PARA O BLOCO DE NOTAS
     public List<String> getNomesSuspeitos() {
         List<String> lista = new ArrayList<>();
         for (Carta c : baralho.values()) {
@@ -207,11 +181,10 @@ public class JogoClueInicio implements Observado {
         return lista;
     }
 
-    // Cria os piões e coloca-os nas coordenadas iniciais correctas do tabuleiro clássico (25 linhas x 24 colunas).
     private void inicializarPioes() {
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
 
-        // Coordenadas reais mapeadas [Linha, Coluna] com base na grelha 25x24 da imagem:
+        // Definição das coordenadas iniciais de cada personagem no tabuleiro 25x24
         int[][] posicoesIniciais = {
                 {24, 7},  // Srta. Rose
                 {17, 0},  // Coronel Mostarda
@@ -228,18 +201,16 @@ public class JogoClueInicio implements Observado {
             pioes.put(nomesSuspeitos[i], novoPiao);
         }
     }
-    // Retorna a posição (linha e coluna) de um pião específico para a View desenhar
-    // Retorna um array onde o index 0 é a Linha (X) e index 1 é a Coluna (Y)
+
     public int[] getCoordenadasPiao(String nomeSuspeito) {
         Piao p = pioes.get(nomeSuspeito);
         if (p != null && p.getPosicaoAtual() != null) {
             Casa c = p.getPosicaoAtual();
             return new int[]{c.getX(), c.getY()};
         }
-        return null; // Caso o peão não esteja no tabuleiro
+        return null;
     }
 
-    // Getters restritos ao pacote para testes e checagens internas.
     Map<Integer, List<Carta>> getMaosJogadores() {
         return maosJogadores;
     }
@@ -250,9 +221,7 @@ public class JogoClueInicio implements Observado {
         return pioes.get(nome);
     }
 
-    // Encaminha o pedido de passagem secreta tratando a busca do peão internamente
     public boolean moverPorPassagemSecreta(String nomeJogador) {
-        // A própria fachada recupera o peão de forma segura dentro do pacote model
         Piao piao = pioes.get(nomeJogador);
         if (piao != null) {
             return tabuleiro.moverPorPassagemSecreta(piao);
@@ -260,99 +229,71 @@ public class JogoClueInicio implements Observado {
         return false;
     }
 
-    // ========================================================
-    // EXPORTAÇÃO SEGURA DE CARTAS PARA A VIEW (3ª ITERAÇÃO)
-    // Retorna uma lista de String[], onde index 0 = Nome e index 1 = Tipo
-    // ========================================================
     public List<String[]> obterDadosCartasDoJogadorAtual() {
-        // Chama o nosso método privado (criado logo abaixo) para pegar os objetos Carta
         List<Carta> cartasDoJogador = buscarCartasDoJogadorAtualInterno();
         List<String[]> dadosDasCartas = new ArrayList<>();
 
         if (cartasDoJogador != null) {
             for (Carta c : cartasDoJogador) {
-                // Traduz o objeto privado para texto que a View pode ler
                 dadosDasCartas.add(new String[]{ c.getNome(), c.getTipo().toString() });
             }
         }
         return dadosDasCartas;
     }
 
-    // Método auxiliar PRIVADO (para não quebrar o encapsulamento).
-    // Ele faz a matemática para descobrir qual é a mão de cartas do jogador da vez.
     private List<Carta> buscarCartasDoJogadorAtualInterno() {
-        // Se as cartas ainda não foram distribuídas, retorna vazio para não dar erro
         if (maosJogadores == null || maosJogadores.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // O map "maosJogadores" usa chaves de 1 até numJogadores.
-        // O "indiceTurnoAtual" começa em 0. Essa matemática ajusta o índice para a chave correta.
         int idJogadorAtual = (indiceTurnoAtual % maosJogadores.size()) + 1;
 
         return maosJogadores.get(idJogadorAtual);
     }
-    // ========================================================
-    // MECÂNICA 1: O PALPITE (SUGESTÃO)
-    // Retorna um Array: [0]=NomeDaCartaRefutada, [1]=TipoDaCarta, [2]=NomeDoJogadorQueMostrou
-    // Se ninguém tiver a carta, retorna null.
-    // ========================================================
+
     public String[] realizarPalpite(String nomeAcusador, String suspeito, String arma, String comodo) {
 
-        // 1. Pela regra do Detetive, o peão do suspeito sugerido é "teleportado" para o cômodo
+        // Regra do jogo: ao dar um palpite, o peão do suspeito sugerido deve ser movido para o mesmo local do acusador
         Piao piaoSuspeito = pioes.get(suspeito);
         Piao piaoAcusador = pioes.get(nomeAcusador);
         if (piaoSuspeito != null && piaoAcusador != null && piaoAcusador.getPosicaoAtual() != null) {
-            // Movemos o suspeito para a exata mesma casa onde o acusador está a fazer o palpite
             tabuleiro.moverPiao(piaoSuspeito, piaoAcusador.getPosicaoAtual());
-            notificarObservadores(); // Atualiza o tabuleiro para mostrar o peão a ser puxado
+            notificarObservadores();
         }
 
-        // 2. Lógica de procurar nas mãos dos outros jogadores (no sentido dos ponteiros do relógio)
+        // Verifica na mão dos oponentes, começando pelo próximo da rodada
         int numJogadoresJogando = maosJogadores.size();
-
-        // Começa do jogador atual (1 a numJogadores) e vai verificando os próximos
         int idAcusador = (indiceTurnoAtual % numJogadoresJogando) + 1;
 
         for (int i = 1; i < numJogadoresJogando; i++) {
-            // Calcula qual é o próximo jogador na roda
             int idInspecionado = ((idAcusador - 1 + i) % numJogadoresJogando) + 1;
 
             List<Carta> mao = maosJogadores.get(idInspecionado);
             if (mao != null) {
                 for (Carta c : mao) {
-                    // Se o jogador tiver uma das 3 cartas do palpite, ele refuta!
                     if (c.getNome().equals(suspeito) ||
                             c.getNome().equals(arma) ||
                             c.getNome().equals(comodo)) {
 
-                        // Descobre o nome do personagem do jogador que mostrou a carta
                         String nomeJogadorQueMostrou = ordemJogadores.get(idInspecionado - 1);
-
                         return new String[]{ c.getNome(), c.getTipo().toString(), nomeJogadorQueMostrou };
                     }
                 }
             }
         }
-        // Se a roda deu a volta completa e ninguém tem nenhuma das 3 cartas:
         return null;
     }
 
-    // ========================================================
-    // MECÂNICA 2: A ACUSAÇÃO FINAL (CORRIGIDO)
-    // Verifica contra o Envelope Confidencial. Retorna TRUE se ganhou, FALSE se perdeu.
-    // ========================================================
     public boolean realizarAcusacaoFinal(String nomeAcusador, String suspeito, String arma, String comodo) {
-        // O envelope agora resolve a comparação internamente de forma segura
         boolean acertou = envelopeConfidencial.verificarSolucao(suspeito, arma, comodo);
 
         if (acertou) {
-            return true; // Fim de jogo, este jogador ganhou!
+            return true;
         } else {
-            jogadoresEliminados.add(nomeAcusador); // O jogador errou e é eliminado
-            passarTurno(); // Passa a vez automaticamente
+            // Caso erre a acusação, o jogador é eliminado da partida
+            jogadoresEliminados.add(nomeAcusador);
+            passarTurno();
             return false;
         }
     }
-
 }
