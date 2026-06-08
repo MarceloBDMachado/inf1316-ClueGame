@@ -1,6 +1,6 @@
 package view;
 
-import javax.swing.;
+import javax.swing.*;
 import controller.ControllerClue;
 import java.awt.;
 import java.util.List;
