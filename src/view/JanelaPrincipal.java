@@ -25,6 +25,13 @@ public class JanelaPrincipal extends JFrame implements Observador {
     private JLabel labelJogador;
     private JPanel painelDadosImagens;
     private JogoClueInicio partida;
+    private JButton botaoPalpite;
+    private JButton botaoSalvar;
+    private JButton botaoCarregar;
+    private JButton botaoRolarSorte;
+    private JButton botaoDadosTeste;
+    private JButton botaoPassagem;
+    private boolean jaMoveuNesteTurno = false;
 
     // ALTERAÇÃO 2: A View agora tem uma referência para o Controller
     private ControllerClue controller;
@@ -40,7 +47,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
     public JanelaPrincipal() {
         // Configurações básicas da janela principal
-        setTitle("Clue - Detetive | Terceira Iteração");
+        setTitle("Clue - Detetive | Finalização");
         setSize(1350, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -106,6 +113,45 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoCartas);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
+        // ==========================================
+        // NOVOS BOTÕES DA 4ª ITERAÇÃO: SALVAR E CARREGAR
+        // ==========================================
+        botaoSalvar = new JButton("Salvar Partida");
+        botaoSalvar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                // Regra do professor: Apenas o filetype pode ser pré-definido
+                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivo de Texto (*.txt)", "txt"));
+                if (fileChooser.showSaveDialog(JanelaPrincipal.this) == JFileChooser.APPROVE_OPTION) {
+                    File arquivo = fileChooser.getSelectedFile();
+                    if (!arquivo.getName().endsWith(".txt")) {
+                        arquivo = new File(arquivo.getAbsolutePath() + ".txt");
+                    }
+                    controller.salvarPartida(arquivo);
+                    JOptionPane.showMessageDialog(JanelaPrincipal.this, "Jogo salvo com sucesso!");
+                }
+            }
+        });
+        painelLateral.add(botaoSalvar);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        botaoCarregar = new JButton("Carregar Partida");
+        botaoCarregar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivo de Texto (*.txt)", "txt"));
+                if (fileChooser.showOpenDialog(JanelaPrincipal.this) == JFileChooser.APPROVE_OPTION) {
+                    controller.carregarPartida(fileChooser.getSelectedFile());
+                    JOptionPane.showMessageDialog(JanelaPrincipal.this, "Jogo carregado com sucesso!");
+                }
+            }
+        });
+        painelLateral.add(botaoCarregar);
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
+        // ==========================================
+
         // Botão para o bloco de notas interativo
         JButton botaoNotas = new JButton("Bloco de Notas");
         botaoNotas.addActionListener(new ActionListener() {
@@ -118,10 +164,14 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Botão de jogada normal com aleatoriedade dos dados
-        JButton botaoRolarSorte = new JButton("Rolar Dados (Sorte)");
+        botaoRolarSorte = new JButton("Rolar Dados (Sorte)");
         botaoRolarSorte.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                jaMoveuNesteTurno = true;
+                botaoRolarSorte.setEnabled(false);
+                botaoDadosTeste.setEnabled(false);
+                botaoPassagem.setEnabled(false);
                 int[] dados = controller.rolarDadosAleatorios();
                 int d1 = dados[0];
                 int d2 = dados[1];
@@ -129,16 +179,23 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
                 painelTabuleiro.setPassosDisponiveis(totalPassos);
                 atualizarImagensDosDados(d1, d2);
+
+                // REGRA DA 4ª ITERAÇÃO: Desabilita salvar após rolar dados
+                botaoSalvar.setEnabled(false);
             }
         });
         painelLateral.add(botaoRolarSorte);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Botão de definição manual dos dados para facilitar correções e testes
-        JButton botaoDadosTeste = new JButton("Definir Dados (Teste)");
+        // Botão de definição manual dos dados
+        botaoDadosTeste = new JButton("Definir Dados (Teste)");
         botaoDadosTeste.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                jaMoveuNesteTurno = true;
+                botaoRolarSorte.setEnabled(false);
+                botaoDadosTeste.setEnabled(false);
+                botaoPassagem.setEnabled(false);
                 int d1 = (Integer) boxDado1.getSelectedItem();
                 int d2 = (Integer) boxDado2.getSelectedItem();
                 int totalPassos = d1 + d2;
@@ -147,13 +204,16 @@ public class JanelaPrincipal extends JFrame implements Observador {
                 atualizarImagensDosDados(d1, d2);
 
                 controller.rolarDados(d1, d2);
+
+                // REGRA DA 4ª ITERAÇÃO: Desabilita salvar após forçar os dados
+                botaoSalvar.setEnabled(false);
             }
         });
         painelLateral.add(botaoDadosTeste);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Botão que permite teletransporte entre os cômodos nos cantos do tabuleiro
-        JButton botaoPassagem = new JButton("Usar Passagem Secreta");
+        // Botão de passagem secreta
+        botaoPassagem = new JButton("Usar Passagem Secreta");
         botaoPassagem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -161,6 +221,11 @@ public class JanelaPrincipal extends JFrame implements Observador {
                 boolean viajou = controller.usarPassagemSecreta(jogadorAtual);
 
                 if (viajou) {
+                    jaMoveuNesteTurno = true;
+                    botaoRolarSorte.setEnabled(false);
+                    botaoDadosTeste.setEnabled(false);
+                    botaoPassagem.setEnabled(false);
+
                     painelTabuleiro.setPassosDisponiveis(0);
                     JOptionPane.showMessageDialog(JanelaPrincipal.this,
                             jogadorAtual + " utilizou com sucesso as passagens secretas da mansão!",
@@ -176,19 +241,22 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Botão para que o detetive possa sugerir uma teoria de crime a partir de um cômodo
-        JButton botaoPalpite = new JButton("Dar Palpite (Sugestão)");
+        botaoPalpite = new JButton("Dar Palpite (Sugestão)");
         botaoPalpite.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
+                // Pega o cômodo onde o jogador está no momento
+                String comodoObrigatorio = controller.getComodoAtualJogador();
+
                 JComboBox<String> comboSuspeitos = new JComboBox<>(partida.getNomesSuspeitos().toArray(new String[0]));
                 JComboBox<String> comboArmas = new JComboBox<>(partida.getNomesArmas().toArray(new String[0]));
-                JComboBox<String> comboComodos = new JComboBox<>(partida.getNomesComodos().toArray(new String[0]));
 
+                // O JOptionPane agora tem um JLabel (texto fixo) para o cômodo em vez de combo box
                 Object[] mensagem = {
                         "Qual suspeito você sugere?", comboSuspeitos,
                         "Com qual arma?", comboArmas,
-                        "Em qual cômodo?", comboComodos
+                        "O cômodo é o atual:", new JLabel(comodoObrigatorio)
                 };
 
                 int opcao = JOptionPane.showConfirmDialog(JanelaPrincipal.this, mensagem, "Fazer um Palpite", JOptionPane.OK_CANCEL_OPTION);
@@ -196,7 +264,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
                 if (opcao == JOptionPane.OK_OPTION) {
                     String suspeito = (String) comboSuspeitos.getSelectedItem();
                     String arma = (String) comboArmas.getSelectedItem();
-                    String comodo = (String) comboComodos.getSelectedItem();
+                    String comodo = comodoObrigatorio; // Usa o cômodo travado
 
                     String[] refutacao = controller.fazerPalpite(suspeito, arma, comodo);
 
@@ -215,8 +283,27 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoPalpite);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Botão crítico do jogo: permite arriscar o resultado final contra o envelope
+        // Botão de acusação
         JButton botaoAcusacao = new JButton("Fazer Acusação Final");
+        painelLateral.add(Box.createRigidArea(new Dimension(0, 20))); // Espaçamento
+        JButton botaoPassarVez = new JButton("Passar a Vez");
+        botaoPassarVez.setBackground(Color.DARK_GRAY);
+        botaoPassarVez.setForeground(Color.WHITE);
+        botaoPassarVez.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                painelTabuleiro.setPassosDisponiveis(0);
+                jaMoveuNesteTurno = false; // Reseta a trava para o próximo jogador
+
+                // Manda reativar os botões de rolagem para o próximo da fila
+                botaoRolarSorte.setEnabled(true);
+                botaoDadosTeste.setEnabled(true);
+                botaoPassagem.setEnabled(true);
+
+                controller.encerrarTurno();
+            }
+        });
+        painelLateral.add(botaoPassarVez);
         botaoAcusacao.setBackground(Color.RED);
         botaoAcusacao.setForeground(Color.WHITE);
         botaoAcusacao.addActionListener(new ActionListener() {
@@ -242,10 +329,18 @@ public class JanelaPrincipal extends JFrame implements Observador {
                     boolean venceu = controller.fazerAcusacao(suspeito, arma, comodo);
 
                     if (venceu) {
-                        JOptionPane.showMessageDialog(JanelaPrincipal.this,
-                                "PARABÉNS! Descobriu o assassino e VENCEU o jogo!\nO crime foi cometido por " + suspeito + " com o/a " + arma + " no/na " + comodo + ".",
-                                "Fim de Jogo - Vitória", JOptionPane.INFORMATION_MESSAGE);
-                        System.exit(0);
+                        // REGRA DA 4ª ITERAÇÃO: Término de Partida e Loop Principal
+                        int resposta = JOptionPane.showConfirmDialog(JanelaPrincipal.this,
+                                "PARABÉNS! Descobriu o assassino e VENCEU o jogo!\nO crime foi cometido por " + suspeito + " com o/a " + arma + " no/na " + comodo + ".\n\nDeseja jogar novamente?",
+                                "Fim de Partida - Acusação Correta", JOptionPane.YES_NO_OPTION);
+
+                        if (resposta == JOptionPane.YES_OPTION) {
+                            ControllerClue.resetarJogo(); // Zera o Singleton
+                            new JanelaInicio().setVisible(true); // Retorna à tela inicial
+                            dispose(); // Fecha o tabuleiro atual
+                        } else {
+                            System.exit(0); // Encerra a aplicação
+                        }
                     } else {
                         JOptionPane.showMessageDialog(JanelaPrincipal.this,
                                 "ACUSAÇÃO ERRADA! A sua teoria estava incorreta.\nVocê está eliminado da investigação e não pode mais jogar.",
@@ -258,33 +353,45 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
         // Após adicionar todos os componentes no painel lateral, fixamos ele na porção direita do BorderLayout
         add(painelLateral, BorderLayout.EAST);
+    }
 
-        // Garante a distribuição correta de cartas e status inicial ao criar a janela
-        controller.iniciarPartida(6);
+    public void iniciarPartidaComJogadores(int n) {
+        controller.iniciarPartida(n);
         atualizarTurnoVisual();
     }
 
-    // ==========================================
-    // ALTERAÇÃO 7: Método obrigatório da interface Observador
-    // Quando o Model mudar, ele chama esse método automaticamente.
-    // ==========================================
+
     @Override
     public void atualizar() {
         atualizarTurnoVisual();
         painelTabuleiro.repaint(); // Manda o tabuleiro se redesenhar sozinho
     }
-    // ==========================================
 
     public void atualizarTurnoVisual() {
         String jogador = partida.getJogadorDaVez();
         labelJogador.setText("Vez de: " + jogador);
 
-        // A própria View determina a cor correspondente ao nome do jogador
         painelDadosImagens.setBackground(obterCorDoJogador(jogador));
         painelDadosImagens.repaint();
-    }
 
-    // Metodo auxiliar da View para mapear os nomes às cores do Swing
+        // 1. Reabilita o botão de salvar no início de um novo turno
+        if (botaoSalvar != null) {
+            botaoSalvar.setEnabled(!jaMoveuNesteTurno);
+        }
+
+        // 2. Trava o botão de Palpite se o jogador estiver no corredor
+        String comodoAtual = controller.getComodoAtualJogador();
+        if (botaoPalpite != null) {
+            botaoPalpite.setEnabled(comodoAtual != null); // Só ativa se estiver num quarto!
+        }
+
+        // 3. Garante o reset visual dos botões de movimento no início de cada turno
+        if (!jaMoveuNesteTurno) {
+            if (botaoRolarSorte != null) botaoRolarSorte.setEnabled(true);
+            if (botaoDadosTeste != null) botaoDadosTeste.setEnabled(true);
+            if (botaoPassagem != null) botaoPassagem.setEnabled(true);
+        }
+    }
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
             case "Srta. Rose":
@@ -306,7 +413,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
     private void atualizarImagensDosDados(int valorD1, int valorD2) {
         try {
-            // Mapeamento exato com a pasta Tabuleiros
             Image img1 = ImageIO.read(new File("resources/Tabuleiros/dado" + valorD1 + ".jpg"));
             Image img2 = ImageIO.read(new File("resources/Tabuleiros/dado" + valorD2 + ".jpg"));
             labelImagemDado1.setIcon(new ImageIcon(img1.getScaledInstance(50, 50, Image.SCALE_SMOOTH)));
@@ -316,6 +422,4 @@ public class JanelaPrincipal extends JFrame implements Observador {
         }
     }
 
-
-    
 }

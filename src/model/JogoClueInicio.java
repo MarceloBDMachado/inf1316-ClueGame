@@ -4,6 +4,7 @@ import observer.Observado;
 import observer.Observador;
 
 import java.util.*;
+import java.io.*;
 
 /**
  * Classe principal que gerencia a lógica de negócio do jogo.
@@ -69,7 +70,9 @@ public class JogoClueInicio implements Observado {
     }
 
     public void passarTurno() {
-        indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
+        do {
+            indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
+        } while (jogadoresEliminados.contains(ordemJogadores.get(indiceTurnoAtual)));
         notificarObservadores();
     }
 
@@ -295,5 +298,91 @@ public class JogoClueInicio implements Observado {
             passarTurno();
             return false;
         }
+    }
+
+    // MÉTODOS DE SALVAMENTO E RECUPERAÇÃO ROBUSTOS (ITERACÃO 4)
+    public void salvarEstado(java.io.File arquivo) {
+        try (java.io.PrintWriter out = new java.io.PrintWriter(new java.io.FileWriter(arquivo))) {
+            out.println("TurnoAtual:" + indiceTurnoAtual);
+
+            // Salvar posição dos peões
+            for (Map.Entry<String, Piao> entry : pioes.entrySet()) {
+                Casa pos = entry.getValue().getPosicaoAtual();
+                if(pos != null) {
+                    out.println("Piao:" + entry.getKey() + "," + pos.getX() + "," + pos.getY());
+                }
+            }
+
+            // Salvar Cartas nas Mãos dos Jogadores
+            for (Map.Entry<Integer, List<Carta>> entry : maosJogadores.entrySet()) {
+                out.print("Mao:" + entry.getKey());
+                for (Carta c : entry.getValue()) {
+                    out.print("," + c.getNome());
+                }
+                out.println();
+            }
+
+            // Salvar os jogadores que já foram eliminados (A Grande Sacada!)
+            for (String eliminado : jogadoresEliminados) {
+                out.println("Eliminado:" + eliminado);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void carregarEstado(java.io.File arquivo) {
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(arquivo))) {
+            String linha;
+            maosJogadores.clear(); // Limpa as mãos antigas antes de carregar
+            jogadoresEliminados.clear(); // Limpa o cemitério de jogadores antes de carregar
+
+            while ((linha = br.readLine()) != null) {
+                if (linha.startsWith("TurnoAtual:")) {
+                    this.indiceTurnoAtual = Integer.parseInt(linha.split(":")[1]);
+                }
+                else if (linha.startsWith("Piao:")) {
+                    String[] partes = linha.substring(5).split(",");
+                    String nome = partes[0];
+                    int x = Integer.parseInt(partes[1]);
+                    int y = Integer.parseInt(partes[2]);
+
+                    Piao p = pioes.get(nome);
+                    Casa destino = tabuleiro.getCasa(x, y);
+                    if(p != null && destino != null) {
+                        tabuleiro.moverPiao(p, destino);
+                    }
+                }
+                else if (linha.startsWith("Mao:")) {
+                    String[] partes = linha.substring(4).split(",");
+                    int idJogador = Integer.parseInt(partes[0]);
+                    List<Carta> maoRecuperada = new ArrayList<>();
+
+                    for (int i = 1; i < partes.length; i++) {
+                        Carta c = baralho.get(partes[i]);
+                        if (c != null) maoRecuperada.add(c);
+                    }
+                    maosJogadores.put(idJogador, maoRecuperada);
+                }
+                else if (linha.startsWith("Eliminado:")) {
+                    // Restaura o jogador banido de volta para a lista de eliminados
+                    jogadoresEliminados.add(linha.substring(10));
+                }
+            }
+            notificarObservadores();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Retorna o nome do cômodo onde o jogador está, ou null se estiver no corredor
+    public String getComodoAtualJogador() {
+        Piao p = pioes.get(getJogadorDaVez());
+        if (p != null && p.getPosicaoAtual() != null &&
+                (p.getPosicaoAtual().getTipo() == TipoCasa.COMODO || p.getPosicaoAtual().getTipo() == TipoCasa.PORTA)) {
+            return p.getPosicaoAtual().getNomeComodo();
+        }
+        return null;
     }
 }

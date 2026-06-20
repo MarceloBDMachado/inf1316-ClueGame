@@ -12,7 +12,6 @@ class Envelope {
         this.crimeComodo = comodo;
     }
 
-    // MÉTODO ADICIONADO: Compara os nomes textuais recebidos com as cartas secretas
     boolean verificarSolucao(String suspeito, String arma, String comodo) {
         if (crimeSuspeito == null || crimeArma == null || crimeComodo == null) {
             return false;

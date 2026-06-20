@@ -38,32 +38,30 @@ public class ControllerClue {
     }
 
     public boolean moverPiao(String jogador, int linha, int coluna, int passos) {
-        boolean sucesso = jogoFacade.deslocarPiao(jogador, linha, coluna, passos);
-        if (sucesso) {
-            jogoFacade.passarTurno(); // Passa a vez se o movimento foi válido
-        }
-        return sucesso;
+        // Agora o Controller apenas move o pião, mas NÃO rouba o turno do jogador!
+        return jogoFacade.deslocarPiao(jogador, linha, coluna, passos);
     }
 
-    // Método para rolar os dados aleatoriamente
+    // Metodo para rolar os dados aleatoriamente
     public int[] rolarDadosAleatorios() {
         return jogoFacade.rolarDados();
     }
 
-    // Método para acionar a passagem secreta do jogador da vez
+    // Metodo para acionar a passagem secreta do jogador da vez
     public boolean usarPassagemSecreta(String jogador) {
-        boolean sucesso = jogoFacade.moverPorPassagemSecreta(jogador);
-        if (sucesso) {
-            // Se o teletransporte deu certo, força o turno a passar
-            jogoFacade.passarTurno();
-        }
-        return sucesso;
+        // Move pela passagem e aguarda a ação do jogador (Palpite ou Passar a Vez)
+        return jogoFacade.moverPorPassagemSecreta(jogador);
+    }
+
+    // Metodo para encerrar o turno do jogador
+    public void encerrarTurno() {
+        jogoFacade.passarTurno();
     }
 
 
     // O Controller pede à Fachada as cartas já formatadas como texto
     public List<String[]> obterDadosCartasDoJogadorAtual() {
-        // Chamando o nome correto do método que está na fachada do Model
+        // Chamando o nome correto do metodo que está na fachada do Model
         return jogoFacade.obterDadosCartasDoJogadorAtual();
     }
 
@@ -83,5 +81,22 @@ public class ControllerClue {
     public boolean fazerAcusacao(String suspeito, String arma, String comodo) {
         String jogadorAtual = jogoFacade.getJogadorDaVez();
         return jogoFacade.realizarAcusacaoFinal(jogadorAtual, suspeito, arma, comodo);
+    }
+
+    public void salvarPartida(java.io.File arquivo) {
+        jogoFacade.salvarEstado(arquivo);
+    }
+
+    public void carregarPartida(java.io.File arquivo) {
+        jogoFacade.carregarEstado(arquivo);
+    }
+
+    public static void resetarJogo() {
+        instancia = new ControllerClue(); // Recria o Singleton do zero
+    }
+
+    // Faz a ponte para a View saber em qual cômodo o jogador está
+    public String getComodoAtualJogador() {
+        return jogoFacade.getComodoAtualJogador();
     }
 }

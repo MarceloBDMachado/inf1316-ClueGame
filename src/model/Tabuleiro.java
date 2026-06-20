@@ -17,7 +17,7 @@ class Tabuleiro {
 
     private void inicializarGrade() {
         // ========================================================
-        // DICIONÁRIO DE MAPEAMENTO (FEITO SOB MEDIDA PARA O SEU TABULEIRO)
+        // DICIONÁRIO DE MAPEAMENTO
         // 'C' = Corredor
         // 'I' = Inacessível / Parede
         // Cômodos (Números):
@@ -106,9 +106,63 @@ class Tabuleiro {
         return null;
     }
 
+    // ========================================================
+    // LÓGICA DE ALOCAÇÃO CENTRALIZADA DENTRO DO CÔMODO
+    // ========================================================
+    private Casa encontrarLugarNoComodo(String nomeComodo) {
+        List<Casa> casasDoComodo = new ArrayList<>();
+        int minX = LINHAS, maxX = 0, minY = COLUNAS, maxY = 0;
+
+        // Acha a Bounding Box do cômodo ignorando as portas
+        for (int i = 0; i < LINHAS; i++) {
+            for (int j = 0; j < COLUNAS; j++) {
+                Casa c = grade[i][j];
+                if (c.getTipo() == TipoCasa.COMODO && nomeComodo.equals(c.getNomeComodo())) {
+                    casasDoComodo.add(c);
+                    if (i < minX) minX = i;
+                    if (i > maxX) maxX = i;
+                    if (j < minY) minY = j;
+                    if (j > maxY) maxY = j;
+                }
+            }
+        }
+
+        int centroX = (minX + maxX) / 2;
+        int centroY = (minY + maxY) / 2;
+
+        Casa melhorCasa = null;
+        double menorDistancia = Double.MAX_VALUE;
+
+        // Procura a casa vazia mais próxima do centro exato
+        for (Casa c : casasDoComodo) {
+            if (!c.isOcupada()) {
+                double dist = Math.pow(c.getX() - centroX, 2) + Math.pow(c.getY() - centroY, 2);
+                if (dist < menorDistancia) {
+                    menorDistancia = dist;
+                    melhorCasa = c;
+                }
+            }
+        }
+        return melhorCasa;
+    }
+
     boolean moverPiao(Piao piao, Casa destino) {
-        if (destino == null || destino.getTipo() == TipoCasa.INACESSIVEL || destino.isOcupada()) {
+        if (destino == null || destino.getTipo() == TipoCasa.INACESSIVEL) {
             return false;
+        }
+
+        // Se estiver indo para um cômodo (clicou na porta ou no chão), tenta alocar no centro
+        if (destino.getTipo() == TipoCasa.COMODO || destino.getTipo() == TipoCasa.PORTA) {
+            String nomeComodo = destino.getNomeComodo();
+            Casa assentoCentral = encontrarLugarNoComodo(nomeComodo);
+            if (assentoCentral != null) {
+                destino = assentoCentral; // Substitui o destino pela cadeira livre no centro
+            } else {
+                return false; // Prevenção: Quarto completamente lotado
+            }
+        } else {
+            // Se for movimento comum de corredor, valida ocupação
+            if (destino.isOcupada()) return false;
         }
 
         Casa origem = piao.getPosicaoAtual();
@@ -121,9 +175,7 @@ class Tabuleiro {
         return true;
     }
 
-    // ==========================================
-    // NOVA FUNÇÃO: PASSAGEM SECRETA
-    // ==========================================
+    // PASSAGEM SECRETA
     boolean moverPorPassagemSecreta(Piao piao) {
         Casa origem = piao.getPosicaoAtual();
         if (origem == null || origem.getNomeComodo() == null) return false;
@@ -137,11 +189,12 @@ class Tabuleiro {
         else if (comodoAtual.equals("Sala de Estar")) nomeDestino = "Jardim de Inverno";
 
         if (nomeDestino != null) {
+            // Basta achar o primeiro tile do cômodo destino. O método moverPiao calculará o centro!
             for (int i = 0; i < LINHAS; i++) {
                 for (int j = 0; j < COLUNAS; j++) {
                     Casa c = grade[i][j];
-                    if (c.getTipo() == TipoCasa.COMODO && nomeDestino.equals(c.getNomeComodo()) && !c.isOcupada()) {
-                        return moverPiao(piao, c); // Teletransporta para um espaço vazio do quarto!
+                    if (nomeDestino.equals(c.getNomeComodo())) {
+                        return moverPiao(piao, c);
                     }
                 }
             }
@@ -149,10 +202,64 @@ class Tabuleiro {
         return false;
     }
 
+    // ========================================================
+    // ALGORITMO DE CAMINHO (ENTRADA E SAÍDA INTELIGENTES)
+    // ========================================================
     List<Casa> mapearCasasAlcancaveis(Casa origem, int passos) {
         Set<Casa> casasAlcancaveis = new HashSet<>();
         Set<Casa> visitadas = new HashSet<>();
-        buscarCaminhos(origem, passos, visitadas, casasAlcancaveis);
+
+        // Se o peão está DENTRO do quarto e vai iniciar sua caminhada de saída:
+        if (origem.getTipo() == TipoCasa.COMODO || origem.getTipo() == TipoCasa.PORTA) {
+            String nomeComodo = origem.getNomeComodo();
+
+            // 1. Marca todo o cômodo atual como visitado para ele não tentar andar internamente
+            for (int i = 0; i < LINHAS; i++) {
+                for (int j = 0; j < COLUNAS; j++) {
+                    Casa c = grade[i][j];
+                    if (nomeComodo.equals(c.getNomeComodo())) {
+                        visitadas.add(c);
+                    }
+                }
+            }
+
+            // 2. Transfere a largada para todas as portas do cômodo para o corredor adjacente (Custa 1 passo)
+            for (int i = 0; i < LINHAS; i++) {
+                for (int j = 0; j < COLUNAS; j++) {
+                    Casa porta = grade[i][j];
+                    if (porta.getTipo() == TipoCasa.PORTA && nomeComodo.equals(porta.getNomeComodo())) {
+                        int[][] direcoes = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+                        for (int[] dir : direcoes) {
+                            Casa vizinho = getCasa(porta.getX() + dir[0], porta.getY() + dir[1]);
+                            if (vizinho != null && vizinho.getTipo() == TipoCasa.CORREDOR && !vizinho.isOcupada()) {
+                                // Subtrai 1 passo pois ele está pisando no corredor saindo da porta
+                                buscarCaminhos(vizinho, passos - 1, visitadas, casasAlcancaveis);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Se está num corredor normal, a busca acontece normalmente
+            buscarCaminhos(origem, passos, visitadas, casasAlcancaveis);
+        }
+
+        // Prepara os cômodos de destino inteiros para serem clicados
+        Set<Casa> comodosExtras = new HashSet<>();
+        for (Casa c : casasAlcancaveis) {
+            if (c.getTipo() == TipoCasa.PORTA || c.getTipo() == TipoCasa.COMODO) {
+                String nome = c.getNomeComodo();
+                for (int i = 0; i < LINHAS; i++) {
+                    for (int j = 0; j < COLUNAS; j++) {
+                        Casa quarto = grade[i][j];
+                        if (quarto.getNomeComodo() != null && quarto.getNomeComodo().equals(nome)) {
+                            comodosExtras.add(quarto);
+                        }
+                    }
+                }
+            }
+        }
+        casasAlcancaveis.addAll(comodosExtras);
         return new ArrayList<>(casasAlcancaveis);
     }
 
@@ -168,24 +275,22 @@ class Tabuleiro {
         for (int[] dir : direcoes) {
             Casa vizinho = getCasa(atual.getX() + dir[0], atual.getY() + dir[1]);
 
-            if (vizinho != null && !visitadas.contains(vizinho) && !vizinho.isOcupada()) {
+            if (vizinho != null && !visitadas.contains(vizinho)) {
 
-                if (vizinho.getTipo() == TipoCasa.CORREDOR) {
-                    buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
-                }
-                else if (vizinho.getTipo() == TipoCasa.PORTA) {
-                    alcancaveis.add(vizinho);
-                    if (atual.getTipo() == TipoCasa.COMODO || atual.getTipo() == TipoCasa.PORTA) {
-                        buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
-                    }
-                }
-                else if (vizinho.getTipo() == TipoCasa.COMODO) {
-                    if (atual.getTipo() == TipoCasa.PORTA || atual.getTipo() == TipoCasa.COMODO) {
+                boolean ocupadoBloqueante = vizinho.isOcupada() && vizinho.getTipo() == TipoCasa.CORREDOR;
+
+                if (!ocupadoBloqueante) {
+                    if (vizinho.getTipo() == TipoCasa.CORREDOR) {
+                        // Passando a MESMA referência de 'visitadas' para eficiência de memória (Backtracking)
+                        buscarCaminhos(vizinho, passosRestantes - 1, visitadas, alcancaveis);
+                    } else if (vizinho.getTipo() == TipoCasa.PORTA) {
+                        // Encostou na porta? Fim de rota, você entrou no quarto e perde os passos excedentes.
                         alcancaveis.add(vizinho);
-                        buscarCaminhos(vizinho, passosRestantes - 1, new HashSet<>(visitadas), alcancaveis);
                     }
                 }
             }
         }
+        // O SEGREDO DO BACKTRACKING: Libera a casa atual para ser usada em outras rotas!
+        visitadas.remove(atual);
     }
 }

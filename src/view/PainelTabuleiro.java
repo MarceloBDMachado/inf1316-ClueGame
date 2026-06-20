@@ -147,14 +147,5 @@ public class PainelTabuleiro extends JPanel {
                 }
             }
         }
-
-        // Grade Vermelha de Debug
-        g2d.setColor(Color.RED);
-        for (int i = 0; i <= totalLinhas; i++) {
-            g2d.drawLine((int)margemEsq, (int)(margemTop + (i * alturaCasa)), (int)(margemEsq + (totalColunas * larguraCasa)), (int)(margemTop + (i * alturaCasa)));
-        }
-        for (int j = 0; j <= totalColunas; j++) {
-            g2d.drawLine((int)(margemEsq + (j * larguraCasa)), (int)margemTop, (int)(margemEsq + (j * larguraCasa)), (int)(margemTop + (totalLinhas * alturaCasa)));
-        }
     }
 }
