@@ -5,6 +5,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+
+// NOVO: Importações necessárias para a tela de seleção de imagens
+import javax.imageio.ImageIO;
+import java.util.ArrayList;
+import java.util.List;
+
 import controller.ControllerClue;
 
 public class JanelaInicio extends JFrame {
@@ -33,29 +39,11 @@ public class JanelaInicio extends JFrame {
         btnNovoJogo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Pergunta o número de jogadores
-                String[] opcoes = {"3", "4", "5", "6"};
-                String num = (String) JOptionPane.showInputDialog(JanelaInicio.this,
-                        "Quantos jogadores vão participar?",
-                        "Novo Jogo",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null, opcoes, opcoes[0]);
-
-                if (num != null) {
-                    int numJogadores = Integer.parseInt(num);
-                    ControllerClue.resetarJogo();
-
-                    // Inicia o jogo com a quantidade escolhida
-                    JanelaPrincipal jogo = new JanelaPrincipal();
-                    jogo.iniciarPartidaComJogadores(numJogadores);
-                    jogo.setVisible(true);
-
-                    dispose();
-                }
+                iniciarFluxoNovoJogo();
             }
         });
 
-        // Botão Continuar (ATUALIZADO PARA A 4ª ITERAÇÃO)
+        // Botão Continuar
         JButton btnContinuar = new JButton("Continuar");
         btnContinuar.setFont(new Font("Arial", Font.BOLD, 18));
         btnContinuar.setPreferredSize(new Dimension(150, 50));
@@ -63,7 +51,6 @@ public class JanelaInicio extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                // Exigência do professor: definir apenas o filetype como pré-definido (.txt)
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivo de Texto (*.txt)", "txt"));
 
                 int escolha = fileChooser.showOpenDialog(JanelaInicio.this);
@@ -71,17 +58,11 @@ public class JanelaInicio extends JFrame {
                 if (escolha == JFileChooser.APPROVE_OPTION) {
                     File arquivoSelecionado = fileChooser.getSelectedFile();
 
-                    // 1. Reseta o Singleton para limpar qualquer resquício de lógicas anteriores
                     ControllerClue.resetarJogo();
-
-                    // 2. Abre a Janela Principal (o tabuleiro do jogo)
                     JanelaPrincipal janelaJogo = new JanelaPrincipal();
                     janelaJogo.setVisible(true);
 
-                    // 3. Solicita ao Controller carregar o arquivo TXT restaurando o estado da partida
                     ControllerClue.getInstancia().carregarPartida(arquivoSelecionado);
-
-                    // 4. Fecha a tela de menu inicial de forma limpa
                     dispose();
                 }
             }
@@ -91,5 +72,111 @@ public class JanelaInicio extends JFrame {
         painelBotoes.add(btnContinuar);
 
         add(painelBotoes, BorderLayout.CENTER);
+    }
+
+    // NOVO: Isolamos o fluxo de Novo Jogo para poder ser chamado diretamente após uma vitória
+    public void iniciarFluxoNovoJogo() {
+        String[] opcoes = {"3", "4", "5", "6"};
+        String num = (String) JOptionPane.showInputDialog(this,
+                "Quantos jogadores vão participar?",
+                "Novo Jogo",
+                JOptionPane.QUESTION_MESSAGE,
+                null, opcoes, opcoes[0]);
+
+        if (num != null) {
+            int numJogadores = Integer.parseInt(num);
+            abrirJanelaSelecao(numJogadores);
+        } else {
+            // Se cancelar, garante que o menu continue visível
+            this.setVisible(true);
+        }
+    }
+
+    // NOVO: Método para abrir a seleção de imagens de piões baseada na quantidade escolhida
+    private void abrirJanelaSelecao(int numJogadores) {
+        JDialog dialog = new JDialog(this, "Escolha " + numJogadores + " Personagens", true);
+        dialog.setSize(650, 550);
+        dialog.setLayout(new BorderLayout());
+        dialog.setLocationRelativeTo(this);
+
+        JLabel labelInstrucao = new JLabel("Selecione os " + numJogadores + " detetives que entrarão na mansão:", SwingConstants.CENTER);
+        labelInstrucao.setFont(new Font("Arial", Font.BOLD, 16));
+        labelInstrucao.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        dialog.add(labelInstrucao, BorderLayout.NORTH);
+
+        JPanel panelImagens = new JPanel(new GridLayout(2, 3, 15, 15));
+        panelImagens.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+
+        String[] nomes = {"Srta. Rose", "Coronel Mostarda", "Dona Branca", "Sr. Marinho", "Dona Violeta", "Professor Plum"};
+        String[] caminhos = {
+                "resources/Suspeitos/Scarlet.jpg",
+                "resources/Suspeitos/Mustard.jpg",
+                "resources/Suspeitos/White.jpg",
+                "resources/Suspeitos/Green.jpg",
+                "resources/Suspeitos/Peacock.jpg",
+                "resources/Suspeitos/Plum.jpg"
+        };
+
+        List<String> selecionados = new ArrayList<>();
+        JButton btnIniciar = new JButton("Confirmar e Iniciar");
+        btnIniciar.setFont(new Font("Arial", Font.BOLD, 18));
+        btnIniciar.setEnabled(false);
+
+        for (int i = 0; i < nomes.length; i++) {
+            String nome = nomes[i];
+            JButton btnIcon = new JButton();
+            btnIcon.setLayout(new BorderLayout());
+
+            try {
+                Image img = ImageIO.read(new File(caminhos[i]));
+                btnIcon.setIcon(new ImageIcon(img.getScaledInstance(130, 180, Image.SCALE_SMOOTH)));
+            } catch (Exception ex) {
+                btnIcon.setText(nome);
+            }
+
+            btnIcon.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+
+            // NOVO: Lambdas removidas e substituídas por ActionListener tradicional
+            btnIcon.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (selecionados.contains(nome)) {
+                        selecionados.remove(nome);
+                        btnIcon.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+                    } else if (selecionados.size() < numJogadores) {
+                        selecionados.add(nome);
+                        btnIcon.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+                    }
+
+                    btnIniciar.setEnabled(selecionados.size() == numJogadores);
+                    labelInstrucao.setText("Escolhidos: " + selecionados.size() + " / " + numJogadores);
+                }
+            });
+
+            panelImagens.add(btnIcon);
+        }
+
+        // NOVO: Lambdas removidas e substituídas por ActionListener tradicional
+        btnIniciar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ControllerClue.resetarJogo();
+                JanelaPrincipal jogo = new JanelaPrincipal();
+                jogo.iniciarPartidaComJogadores(numJogadores, selecionados);
+                jogo.setVisible(true);
+
+                dialog.dispose();
+                dispose();
+            }
+        });
+
+        dialog.add(panelImagens, BorderLayout.CENTER);
+
+        JPanel panelSul = new JPanel();
+        panelSul.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        panelSul.add(btnIniciar);
+        dialog.add(panelSul, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
     }
 }
