@@ -14,7 +14,7 @@ public class ControllerClue {
         this.jogoFacade = new JogoClueInicio();
     }
 
-    // 3. Padrão Singleton: Método global para pegar a única instância
+    // 3. Padrão Singleton: Metodo global para pegar a única instância
     public static ControllerClue getInstancia() {
         if (instancia == null) {
             instancia = new ControllerClue();
@@ -22,14 +22,14 @@ public class ControllerClue {
         return instancia;
     }
 
-    // Método para a View se registrar como ouvinte do Model
+    // Metodo para a View se registrar como ouvinte do Model
     public void registrarObservador(Observador o) {
         jogoFacade.adicionarObservador(o);
     }
 
-    // Método para inicializar os dados da partida
-    public void iniciarPartida(int numJogadores) {
-        jogoFacade.prepararPartida(numJogadores);
+    // NOVO: Metodo atualizado para receber os personagensEscolhidos repassados pela Janela
+    public void iniciarPartida(int numJogadores, List<String> personagensSelecionados) {
+        jogoFacade.prepararPartida(numJogadores, personagensSelecionados);
     }
 
     // Delegação de responsabilidades (O Controller pede para a Façade agir)
@@ -53,7 +53,7 @@ public class ControllerClue {
         return jogoFacade.moverPorPassagemSecreta(jogador);
     }
 
-    // Metodo para encerrar o turno do jogador
+    // Metodo para acessar o encerramento do turno do jogador
     public void encerrarTurno() {
         jogoFacade.passarTurno();
     }
