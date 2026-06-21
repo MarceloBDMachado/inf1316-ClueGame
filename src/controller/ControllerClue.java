@@ -14,7 +14,7 @@ public class ControllerClue {
         this.jogoFacade = new JogoClueInicio();
     }
 
-    // 3. Padrão Singleton: Metodo global para pegar a única instância
+    // 3. Padrão Singleton: Método global para pegar a única instância
     public static ControllerClue getInstancia() {
         if (instancia == null) {
             instancia = new ControllerClue();
@@ -22,12 +22,12 @@ public class ControllerClue {
         return instancia;
     }
 
-    // Metodo para a View se registrar como ouvinte do Model
+    // Método para a View se registrar como ouvinte do Model
     public void registrarObservador(Observador o) {
         jogoFacade.adicionarObservador(o);
     }
 
-    // NOVO: Metodo atualizado para receber os personagensEscolhidos repassados pela Janela
+    // NOVO: Método atualizado para receber os personagensEscolhidos repassados pela Janela
     public void iniciarPartida(int numJogadores, List<String> personagensSelecionados) {
         jogoFacade.prepararPartida(numJogadores, personagensSelecionados);
     }
@@ -70,6 +70,14 @@ public class ControllerClue {
         return jogoFacade;
     }
 
+    // NOVO: Métodos criados para intermediar as anotações do bloco de notas entre a View e o Model
+    public void marcarNota(String jogador, String item, boolean marcado) {
+        jogoFacade.marcarNota(jogador, item, marcado);
+    }
+
+    public boolean isNotaMarcada(String jogador, String item) {
+        return jogoFacade.isNotaMarcada(jogador, item);
+    }
 
     // Recebe o palpite da View e envia para o Model
     public String[] fazerPalpite(String suspeito, String arma, String comodo) {
