@@ -1,6 +1,6 @@
 package model;
 
-public class Carta {
+class Carta {
     private final String nome;
     private final TipoCarta tipo;
 
@@ -8,15 +8,14 @@ public class Carta {
         this.nome = nome;
         this.tipo = tipo;
     }
-
-    public String getNome() {
+    // Getters simples para ler as informações da carta. Todos finals, logo imutáveis.
+    String getNome() {
         return nome;
     }
-
-    public TipoCarta getTipo() {
+    TipoCarta getTipo() {
         return tipo;
     }
-
+    // Override no toString para printar, por exemplo, Faca (ARMA)
     @Override
     public String toString() {
         return nome + " (" + tipo + ")";

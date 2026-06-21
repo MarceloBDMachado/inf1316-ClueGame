@@ -1,43 +1,41 @@
 package model;
 
-public class Casa {
+class Casa {
     private final int x;
     private final int y;
     private final TipoCasa tipo;
     private String nomeComodo;
-    private Piao piaoOcupante;
+    private Piao piaoOcupante; // se já tem alguém no lugar
 
     Casa(int x, int y, TipoCasa tipo) {
         this.x = x;
         this.y = y;
         this.tipo = tipo;
         this.piaoOcupante = null;
+        this.nomeComodo = null; // Inicializa vazio
     }
 
+    // comandos para incializar os comodos
     void setNomeComodo(String nomeComodo) {
         this.nomeComodo = nomeComodo;
     }
 
-    public String getNomeComodo() {
+    String getNomeComodo() {
         return nomeComodo;
     }
 
-    public TipoCasa getTipo() {
+    TipoCasa getTipo() {
         return tipo;
     }
 
-    public int getX() {
-        return x;
-    }
+    int getX() { return x; }
+    int getY() { return y; }
 
-    public int getY() {
-        return y;
-    }
-
-    public boolean isOcupada() {
+    boolean isOcupada() {
         return piaoOcupante != null;
     }
 
+    // para movimentação do piao
     Piao getPiao() {
         return piaoOcupante;
     }
