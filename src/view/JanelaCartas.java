@@ -107,7 +107,7 @@ public class JanelaCartas extends JDialog {
                 String nomeCarta = c[0];
                 String tipoCarta = c[1];
                 Image img = cacheImagens.get(nomeCarta);
-                
+
                 g2d.setColor(Color.BLACK);
                 g2d.setStroke(new BasicStroke(2));
                 g2d.drawRect(posX, posY, CARTA_LARGURA, CARTA_ALTURA);
