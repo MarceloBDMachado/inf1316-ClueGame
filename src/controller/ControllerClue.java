@@ -27,9 +27,9 @@ public class ControllerClue {
         jogoFacade.adicionarObservador(o);
     }
 
-    // Método para inicializar os dados da partida
-    public void iniciarPartida(int numJogadores) {
-        jogoFacade.prepararPartida(numJogadores);
+    // NOVO: Método atualizado para receber os personagensEscolhidos repassados pela Janela
+    public void iniciarPartida(int numJogadores, List<String> personagensSelecionados) {
+        jogoFacade.prepararPartida(numJogadores, personagensSelecionados);
     }
 
     // Delegação de responsabilidades (O Controller pede para a Façade agir)
@@ -53,7 +53,7 @@ public class ControllerClue {
         return jogoFacade.moverPorPassagemSecreta(jogador);
     }
 
-    // Metodo para encerrar o turno do jogador
+    // Metodo para acessar o encerramento do turno do jogador
     public void encerrarTurno() {
         jogoFacade.passarTurno();
     }
@@ -70,6 +70,14 @@ public class ControllerClue {
         return jogoFacade;
     }
 
+    // NOVO: Métodos criados para intermediar as anotações do bloco de notas entre a View e o Model
+    public void marcarNota(String jogador, String item, boolean marcado) {
+        jogoFacade.marcarNota(jogador, item, marcado);
+    }
+
+    public boolean isNotaMarcada(String jogador, String item) {
+        return jogoFacade.isNotaMarcada(jogador, item);
+    }
 
     // Recebe o palpite da View e envia para o Model
     public String[] fazerPalpite(String suspeito, String arma, String comodo) {
