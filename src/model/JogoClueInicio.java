@@ -19,11 +19,20 @@ public class JogoClueInicio implements Observado {
     private Map<String, Carta> baralho;
     private Map<Integer, List<Carta>> maosJogadores;
     private Envelope envelopeConfidencial;
-    private final List<String> ordemJogadores = Arrays.asList("Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca");
+
+    // NOVO: Removido o 'final' e a lista estática (Arrays.asList gera uma lista fixa que daria erro no .clear()), agora é preenchida dinamicamente
+    private List<String> ordemJogadores = new ArrayList<>();
+
     private int indiceTurnoAtual = 0;
     private List<String> jogadoresEliminados = new ArrayList<>();
 
     private List<Observador> observadores = new ArrayList<>();
+
+    // NOVO: Mapa para controlar a regra de restrição de palpites consecutivos no mesmo cômodo
+    private Map<String, Boolean> jaPalpitouNoComodoAtual = new HashMap<>();
+
+    // NOVO: Estrutura de dados para armazenar de forma persistente as anotações manuais do bloco de notas de cada personagem
+    private Map<String, Set<String>> anotacoesJogadores = new HashMap<>();
 
     public JogoClueInicio() {
         this.dado1 = new Dado();
@@ -35,7 +44,8 @@ public class JogoClueInicio implements Observado {
         this.envelopeConfidencial = new Envelope();
 
         inicializarCartas();
-        inicializarPioes();
+        // NOVO: A inicialização fixa foi comentada/removida daqui, para iniciar somente quem foi selecionado
+        // inicializarPioes();
     }
 
     @Override
@@ -66,10 +76,14 @@ public class JogoClueInicio implements Observado {
     }
 
     public String getJogadorDaVez() {
+        // NOVO: Tratamento para evitar NullPointerException caso a lista esteja vazia ao iniciar
+        if (ordemJogadores.isEmpty()) return "Nenhum";
         return ordemJogadores.get(indiceTurnoAtual);
     }
 
     public void passarTurno() {
+        // NOVO: Proteção extra
+        if (ordemJogadores.isEmpty()) return;
         do {
             indiceTurnoAtual = (indiceTurnoAtual + 1) % ordemJogadores.size();
         } while (jogadoresEliminados.contains(ordemJogadores.get(indiceTurnoAtual)));
@@ -94,6 +108,8 @@ public class JogoClueInicio implements Observado {
             if (casasPermitidas.contains(destino)) {
                 boolean sucesso = tabuleiro.moverPiao(piao, destino);
                 if (sucesso) {
+                    // NOVO: Se o movimento foi bem-sucedido, limpa a flag de palpite feito para permitir palpite no novo cômodo
+                    jaPalpitouNoComodoAtual.put(nomeSuspeito, false);
                     notificarObservadores();
                 }
                 return sucesso;
@@ -102,10 +118,36 @@ public class JogoClueInicio implements Observado {
         return false;
     }
 
-    public void prepararPartida(int numJogadores) {
+    // NOVO: Adicionado parametro para a lista de personagens selecionados e injetando neles
+    public void prepararPartida(int numJogadores, List<String> personagensSelecionados) {
         if(numJogadores < 3 || numJogadores > 6) {
             throw new IllegalArgumentException("número de jogadores inválido");
         }
+
+        // NOVO: Alimenta a ordem de turnos do jogo com base na escolha da interface gráfica
+        this.ordemJogadores.clear();
+
+        // NOVO: Força a ordenação oficial (Scarlet, Mustard, White, Green, Peacock, Plum) independentemente de como vieram da interface
+        List<String> ordemOficial = Arrays.asList("Srta. Rose", "Coronel Mostarda", "Dona Branca", "Sr. Marinho", "Dona Violeta", "Professor Plum");
+        for (String personagem : ordemOficial) {
+            if (personagensSelecionados.contains(personagem)) {
+                this.ordemJogadores.add(personagem);
+            }
+        }
+
+        // NOVO: Inicializa o mapa de restrição de palpites consecutivos para todos os personagens oficiais
+        jaPalpitouNoComodoAtual.clear();
+        for (String personagem : ordemOficial) {
+            jaPalpitouNoComodoAtual.put(personagem, false);
+        }
+
+        // NOVO: Inicializa os conjuntos de anotações vazios para cada um dos personagens oficiais
+        anotacoesJogadores.clear();
+        for (String personagem : ordemOficial) {
+            anotacoesJogadores.put(personagem, new HashSet<String>());
+        }
+
+        inicializarPioes(personagensSelecionados);
 
         List<Carta> suspeitos = new ArrayList<>();
         List<Carta> armas = new ArrayList<>();
@@ -184,7 +226,10 @@ public class JogoClueInicio implements Observado {
         return lista;
     }
 
-    private void inicializarPioes() {
+    // NOVO: Metodo inicializarPioes foi atualizado para receber uma lista e gerar os peões apenas dos escolhidos
+    // NOVO: Modificado para sempre carregar todos os 6 piões no tabuleiro, permitindo que NPCs sejam teletransportados por palpites
+    private void inicializarPioes(List<String> escolhidos) {
+        pioes.clear(); // Limpa as existencias antes de setar novas
         String[] nomesSuspeitos = {"Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca"};
 
         // Definição das coordenadas iniciais de cada personagem no tabuleiro 25x24
@@ -198,6 +243,7 @@ public class JogoClueInicio implements Observado {
         };
 
         for (int i = 0; i < nomesSuspeitos.length; i++) {
+            // NOVO: Removemos a condicional de filtro para instanciar todos os 6 piões fisicamente na grade do mapa
             Piao novoPiao = new Piao(nomesSuspeitos[i]);
             Casa casaInicial = tabuleiro.getCasa(posicoesIniciais[i][0], posicoesIniciais[i][1]);
             tabuleiro.moverPiao(novoPiao, casaInicial);
@@ -220,6 +266,7 @@ public class JogoClueInicio implements Observado {
     Envelope getEnvelopeConfidencial() {
         return envelopeConfidencial;
     }
+
     Piao getPiao(String nome) {
         return pioes.get(nome);
     }
@@ -227,7 +274,12 @@ public class JogoClueInicio implements Observado {
     public boolean moverPorPassagemSecreta(String nomeJogador) {
         Piao piao = pioes.get(nomeJogador);
         if (piao != null) {
-            return tabuleiro.moverPorPassagemSecreta(piao);
+            boolean viajou = tabuleiro.moverPorPassagemSecreta(piao);
+            // NOVO: Se usou a passagem, limpa o bloqueio de palpite consecutivo para o novo aposento
+            if (viajou) {
+                jaPalpitouNoComodoAtual.put(nomeJogador, false);
+            }
+            return viajou;
         }
         return false;
     }
@@ -254,15 +306,45 @@ public class JogoClueInicio implements Observado {
         return maosJogadores.get(idJogadorAtual);
     }
 
+    // NOVO: Métodos adicionados para gerenciar e persistir as anotações manuais dos blocos de notas
+    public void marcarNota(String jogador, String item, boolean marcado) {
+        if (!anotacoesJogadores.containsKey(jogador)) {
+            anotacoesJogadores.put(jogador, new HashSet<String>());
+        }
+        if (marcado) {
+            anotacoesJogadores.get(jogador).add(item);
+        } else {
+            anotacoesJogadores.get(jogador).remove(item);
+        }
+    }
+
+    public boolean isNotaMarcada(String jogador, String item) {
+        if (!anotacoesJogadores.containsKey(jogador)) {
+            return false;
+        }
+        return anotacoesJogadores.get(jogador).contains(item);
+    }
+
     public String[] realizarPalpite(String nomeAcusador, String suspeito, String arma, String comodo) {
+        // NOVO: Validação da regra que proíbe palpites consecutivos no mesmo cômodo sem deslocamento prévio
+        if (jaPalpitouNoComodoAtual.getOrDefault(nomeAcusador, false)) {
+            return new String[]{"ERRO_CONSECUTIVO", "", ""};
+        }
 
         // Regra do jogo: ao dar um palpite, o peão do suspeito sugerido deve ser movido para o mesmo local do acusador
         Piao piaoSuspeito = pioes.get(suspeito);
         Piao piaoAcusador = pioes.get(nomeAcusador);
+
+        // NOVO: Adicionada verificação extra de integridade, apenas move o suspeito se o peão dele fisicamente existe no mapa
         if (piaoSuspeito != null && piaoAcusador != null && piaoAcusador.getPosicaoAtual() != null) {
             tabuleiro.moverPiao(piaoSuspeito, piaoAcusador.getPosicaoAtual());
+            // NOVO: Caso o suspeito movido seja um jogador ativo arrastado por uma sugestão, ele ganha o direito de palpitar ali no seu turno
+            jaPalpitouNoComodoAtual.put(suspeito, false);
             notificarObservadores();
         }
+
+        // NOVO: Define a trava de palpite efetuado para o acusador atual neste cômodo
+        jaPalpitouNoComodoAtual.put(nomeAcusador, true);
 
         // Verifica na mão dos oponentes, começando pelo próximo da rodada
         int numJogadoresJogando = maosJogadores.size();
@@ -305,6 +387,13 @@ public class JogoClueInicio implements Observado {
         try (java.io.PrintWriter out = new java.io.PrintWriter(new java.io.FileWriter(arquivo))) {
             out.println("TurnoAtual:" + indiceTurnoAtual);
 
+            // NOVO: Como a ordem de jogadores agora é dinâmica, é estritamente necessário salvar ela para carregar depois
+            out.print("Ordem:");
+            for (int i = 0; i < ordemJogadores.size(); i++) {
+                out.print(ordemJogadores.get(i) + (i < ordemJogadores.size() - 1 ? "," : ""));
+            }
+            out.println();
+
             // Salvar posição dos peões
             for (Map.Entry<String, Piao> entry : pioes.entrySet()) {
                 Casa pos = entry.getValue().getPosicaoAtual();
@@ -327,6 +416,17 @@ public class JogoClueInicio implements Observado {
                 out.println("Eliminado:" + eliminado);
             }
 
+            // NOVO: Gravação de cada item marcado no bloco de notas dos detetives no arquivo TXT
+            for (Map.Entry<String, Set<String>> entry : anotacoesJogadores.entrySet()) {
+                if (entry.getValue().size() > 0) {
+                    out.print("Anotacao:" + entry.getKey());
+                    for (String marcado : entry.getValue()) {
+                        out.print("," + marcado);
+                    }
+                    out.println();
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -338,9 +438,24 @@ public class JogoClueInicio implements Observado {
             maosJogadores.clear(); // Limpa as mãos antigas antes de carregar
             jogadoresEliminados.clear(); // Limpa o cemitério de jogadores antes de carregar
 
+            // NOVO: O Limpador de peões precisou ser adicionado para não duplicar objetos visuais
+            pioes.clear();
+
+            // NOVO: Limpa as anotações da memória antes de restaurar o save para evitar sobreposição
+            anotacoesJogadores.clear();
+
             while ((linha = br.readLine()) != null) {
                 if (linha.startsWith("TurnoAtual:")) {
                     this.indiceTurnoAtual = Integer.parseInt(linha.split(":")[1]);
+                }
+                // NOVO: Linha de recuperação e ativação dos personagens específicos do Save
+                else if (linha.startsWith("Ordem:")) {
+                    String[] partes = linha.substring(6).split(",");
+                    ordemJogadores.clear();
+                    for (String p : partes) {
+                        if (!p.isEmpty()) ordemJogadores.add(p);
+                    }
+                    inicializarPioes(ordemJogadores); // Coloca eles no tabuleiro
                 }
                 else if (linha.startsWith("Piao:")) {
                     String[] partes = linha.substring(5).split(",");
@@ -369,7 +484,25 @@ public class JogoClueInicio implements Observado {
                     // Restaura o jogador banido de volta para a lista de eliminados
                     jogadoresEliminados.add(linha.substring(10));
                 }
+                // NOVO: Reconstrói o bloco de notas individual de cada jogador a partir das linhas lidas do TXT
+                else if (linha.startsWith("Anotacao:")) {
+                    String[] partes = linha.substring(9).split(",");
+                    String jogador = partes[0];
+                    Set<String> marcacoes = new HashSet<>();
+                    for (int i = 1; i < partes.length; i++) {
+                        if (!partes[i].isEmpty()) marcacoes.add(partes[i]);
+                    }
+                    anotacoesJogadores.put(jogador, marcacoes);
+                }
             }
+
+            // NOVO: Estrutura de Fallback para caso abra um save game MUITO antigo, que foi salvo sem as variaveis de ordem
+            if (ordemJogadores.isEmpty()) {
+                // NOVO: Estrutura de Fallback atualizada para la ordem oficial
+                ordemJogadores.addAll(Arrays.asList("Srta. Rose", "Coronel Mostarda", "Dona Branca", "Sr. Marinho", "Dona Violeta", "Professor Plum"));
+                inicializarPioes(ordemJogadores);
+            }
+
             notificarObservadores();
         } catch (Exception e) {
             e.printStackTrace();
