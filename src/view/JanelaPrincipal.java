@@ -14,10 +14,17 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
+// NOVO: Importação para trabalhar com a lista de personagens vindos da tela inicial
+import java.util.List;
+
 // ALTERAÇÃO 1: A classe agora implementa a interface Observador
 public class JanelaPrincipal extends JFrame implements Observador {
 
     private PainelTabuleiro painelTabuleiro;
+
+    // NOVO: Transformamos o painelLateral em um atributo da classe para podermos mudar a cor dele de qualquer método
+    private JPanel painelLateral;
+
     private JComboBox<Integer> boxDado1;
     private JComboBox<Integer> boxDado2;
     private JLabel labelImagemDado1;
@@ -64,16 +71,18 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelTabuleiro = new PainelTabuleiro(partida, this);
         add(new JScrollPane(painelTabuleiro), BorderLayout.CENTER);
 
-        // Cria e configura o painel lateral de controle
-        JPanel painelLateral = new JPanel();
+        // NOVO: Usa a variável de classe instanciada, configurando o painel inteiro
+        painelLateral = new JPanel();
         painelLateral.setLayout(new BoxLayout(painelLateral, BoxLayout.Y_AXIS));
         painelLateral.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         painelLateral.setPreferredSize(new Dimension(250, 900));
+        // NOVO: Garante que o painel pinta o seu fundo
+        painelLateral.setOpaque(true);
 
         // Título que indica o jogador da vez
         labelJogador = new JLabel();
-        labelJogador.setFont(new Font("Arial", Font.BOLD, 14));
-        labelJogador.setForeground(Color.RED);
+        labelJogador.setFont(new Font("Arial", Font.BOLD, 18)); // NOVO: Aumentei um pouco a fonte para destaque
+        labelJogador.setForeground(Color.BLACK); // NOVO: Mudei para preto pois o fundo inteiro agora será colorido
         painelLateral.add(labelJogador);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
@@ -95,7 +104,8 @@ public class JanelaPrincipal extends JFrame implements Observador {
         labelImagemDado1 = new JLabel();
         labelImagemDado2 = new JLabel();
         painelDadosImagens = new JPanel(new FlowLayout());
-        painelDadosImagens.setOpaque(true);
+        // NOVO: Agora que o painelLateral inteiro será colorido, o painelDadosImagens deve ser transparente
+        painelDadosImagens.setOpaque(false);
         painelDadosImagens.add(labelImagemDado1);
         painelDadosImagens.add(labelImagemDado2);
         painelLateral.add(painelDadosImagens);
@@ -268,6 +278,13 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
                     String[] refutacao = controller.fazerPalpite(suspeito, arma, comodo);
 
+                    if (refutacao != null && refutacao.length > 0 && refutacao[0].equals("ERRO_CONSECUTIVO")) {
+                        JOptionPane.showMessageDialog(JanelaPrincipal.this,
+                                "Ação Inválida! Você não pode fazer palpites consecutivos no mesmo cômodo sem sair dele primeiro.",
+                                "Regra do Clue", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
                     if (refutacao != null) {
                         JOptionPane.showMessageDialog(JanelaPrincipal.this,
                                 "O detetive " + refutacao[2] + " desmentiu a sua teoria e mostrou a carta:\n\n" + refutacao[0] + " (" + refutacao[1] + ")",
@@ -286,6 +303,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
         // Botão de acusação
         JButton botaoAcusacao = new JButton("Fazer Acusação Final");
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20))); // Espaçamento
+
         JButton botaoPassarVez = new JButton("Passar a Vez");
         botaoPassarVez.setBackground(Color.DARK_GRAY);
         botaoPassarVez.setForeground(Color.WHITE);
@@ -304,8 +322,11 @@ public class JanelaPrincipal extends JFrame implements Observador {
             }
         });
         painelLateral.add(botaoPassarVez);
-        botaoAcusacao.setBackground(Color.RED);
+
+        // NOVO: Nova cor chamativa (Laranja Escuro) aplicada no botão de acusação para se destacar do fundo inteiro colorido
+        botaoAcusacao.setBackground(new Color(255, 128, 0)); // Laranja forte
         botaoAcusacao.setForeground(Color.WHITE);
+
         botaoAcusacao.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -336,7 +357,9 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
                         if (resposta == JOptionPane.YES_OPTION) {
                             ControllerClue.resetarJogo(); // Zera o Singleton
-                            new JanelaInicio().setVisible(true); // Retorna à tela inicial
+                            // Cumprindo a regra do PDF para reabrir a janela de seleção diretamente
+                            JanelaInicio menu = new JanelaInicio();
+                            menu.iniciarFluxoNovoJogo();
                             dispose(); // Fecha o tabuleiro atual
                         } else {
                             System.exit(0); // Encerra a aplicação
@@ -355,8 +378,9 @@ public class JanelaPrincipal extends JFrame implements Observador {
         add(painelLateral, BorderLayout.EAST);
     }
 
-    public void iniciarPartidaComJogadores(int n) {
-        controller.iniciarPartida(n);
+    // A assinatura mudou para receber os personagens selecionados e enviar ao controller
+    public void iniciarPartidaComJogadores(int n, List<String> personagensSelecionados) {
+        controller.iniciarPartida(n, personagensSelecionados);
         atualizarTurnoVisual();
     }
 
@@ -371,8 +395,11 @@ public class JanelaPrincipal extends JFrame implements Observador {
         String jogador = partida.getJogadorDaVez();
         labelJogador.setText("Vez de: " + jogador);
 
-        painelDadosImagens.setBackground(obterCorDoJogador(jogador));
-        painelDadosImagens.repaint();
+        // NOVO: Agora a cor de fundo é aplicada no painelLateral INTEIRO!
+        painelLateral.setBackground(obterCorDoJogador(jogador));
+
+        // NOVO: Redesenha o painel inteiro
+        painelLateral.repaint();
 
         // 1. Reabilita o botão de salvar no início de um novo turno
         if (botaoSalvar != null) {
@@ -392,20 +419,23 @@ public class JanelaPrincipal extends JFrame implements Observador {
             if (botaoPassagem != null) botaoPassagem.setEnabled(true);
         }
     }
+
+    // NOVO: Atualizado os valores RGB para tons mais "pastéis/claros".
+    // Assim, o texto preto e os botões continuam legíveis na barra lateral inteira.
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
             case "Srta. Rose":
-                return Color.RED;
+                return new Color(255, 182, 193); // Rosa Claro / Vermelho Pastel
             case "Coronel Mostarda":
-                return Color.YELLOW;
+                return new Color(255, 255, 153); // Amarelo Pastel
             case "Professor Plum":
-                return new Color(128, 0, 128); // Roxo clássico do Plum
+                return new Color(216, 191, 216); // Roxo Pastel / Thistle
             case "Sr. Marinho":
-                return Color.GREEN;
+                return new Color(152, 251, 152); // Verde Claro Pastel
             case "Dona Violeta":
-                return Color.BLUE;
+                return new Color(173, 216, 230); // Azul Claro Pastel
             case "Dona Branca":
-                return Color.WHITE;
+                return new Color(245, 245, 245); // Branco Gelo / Off-white
             default:
                 return Color.LIGHT_GRAY;
         }
