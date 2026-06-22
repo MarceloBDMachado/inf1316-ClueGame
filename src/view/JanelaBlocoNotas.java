@@ -49,7 +49,6 @@ public class JanelaBlocoNotas extends JDialog {
         painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
         painel.setBorder(BorderFactory.createTitledBorder(titulo));
 
-        // NOVO: Referência final do controller e do detetive da vez para gerenciar as marcações individuais
         final ControllerClue controller = ControllerClue.getInstancia();
         final String jogadorAtual = controller.getModel().getJogadorDaVez();
 
@@ -63,12 +62,11 @@ public class JanelaBlocoNotas extends JDialog {
                     box.setEnabled(false); // Travado e desabilitado pois o jogador já possui essa carta na mão
                     box.setForeground(Color.BLUE); // Destaque para diferenciar das anotações normais
                 } else {
-                    // NOVO: Recupera do Model se o detetive atual já havia marcado este item antes
+                    // Recupera do Model se o jogador atual já havia marcado este item antes
                     if (controller.isNotaMarcada(jogadorAtual, item)) {
                         box.setSelected(true);
                     }
 
-                    // NOVO: Substituídas expressões lambda por ActionListener tradicional em conformidade com as regras de E/S Swing
                     box.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
