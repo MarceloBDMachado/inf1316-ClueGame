@@ -438,11 +438,11 @@ public class JanelaPrincipal extends JFrame implements Observador {
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
             case "Srta. Rose":
-                return new Color(255, 182, 193); // Rosa Claro / Vermelho Pastel
+                return new Color(255, 104, 104); // Rosa Claro / Vermelho Pastel
             case "Coronel Mostarda":
                 return new Color(255, 255, 153); // Amarelo Pastel
             case "Professor Plum":
-                return new Color(216, 191, 216); // Roxo Pastel / Thistle
+                return new Color(214, 122, 244); // Roxo Pastel / Thistle
             case "Sr. Marinho":
                 return new Color(152, 251, 152); // Verde Claro Pastel
             case "Dona Violeta":
