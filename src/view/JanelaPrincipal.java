@@ -2,7 +2,6 @@ package view;
 
 import javax.swing.*;
 
-// NOVAS IMPORTAÇÕES PARA OS PADRÕES DE PROJETO
 import controller.ControllerClue;
 import observer.Observador;
 import model.JogoClueInicio;
@@ -13,18 +12,13 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
-
-// NOVO: Importação para trabalhar com a lista de personagens vindos da tela inicial
 import java.util.List;
 
-// ALTERAÇÃO 1: A classe agora implementa a interface Observador
+// Implementa a interface Observador
 public class JanelaPrincipal extends JFrame implements Observador {
 
     private PainelTabuleiro painelTabuleiro;
-
-    // NOVO: Transformamos o painelLateral em um atributo da classe para podermos mudar a cor dele de qualquer método
     private JPanel painelLateral;
-
     private JComboBox<Integer> boxDado1;
     private JComboBox<Integer> boxDado2;
     private JLabel labelImagemDado1;
@@ -40,17 +34,15 @@ public class JanelaPrincipal extends JFrame implements Observador {
     private JButton botaoPassagem;
 
     private boolean jaMoveuNesteTurno = false;
-    // NOVO: Flag para rastrear se o jogador fez uma sugestão neste turno
     private boolean jaDeuPalpiteNesteTurno = false;
-
-    // ALTERAÇÃO 2: A View agora tem uma referência para o Controller
+    
     private ControllerClue controller;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new JanelaInicio().setVisible(true); // AGORA ABRE A JANELA INICIAL!
+                new JanelaInicio().setVisible(true);
             }
         });
     }
@@ -63,7 +55,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Recupera as instâncias necessárias através do Controller para manter o encapsulamento
+        // Recupera as instâncias necessárias através do Controller
         this.controller = ControllerClue.getInstancia();
         this.partida = controller.getModel();
 
