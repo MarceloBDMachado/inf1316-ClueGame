@@ -1,115 +1,151 @@
-package controller;
+package view;
 
-import model.JogoClueInicio;
-import observer.Observador;
-import java.util.List;
+import model.JogoClueInicio; // Importa a fachada do Model
+import controller.ControllerClue; // ALTERAÇÃO 1: Importa o Controller
 
-public class ControllerClue {
-    // 1. Padrão Singleton: Instância única estática
-    private static ControllerClue instancia;
-    private JogoClueInicio jogoFacade;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import javax.imageio.ImageIO;
 
-    // 2. Padrão Singleton: Construtor privado (ninguém pode dar 'new' de fora)
-    private ControllerClue() {
-        this.jogoFacade = new JogoClueInicio();
-    }
+public class PainelTabuleiro extends JPanel {
+    private Image imagemTabuleiro;
+    private int passosDisponiveis = 0;
+    private Map<String, Image> imagensPeoes = new HashMap<>();
 
-    // 3. Padrão Singleton: Método global para pegar a única instância
-    public static ControllerClue getInstancia() {
-        if (instancia == null) {
-            instancia = new ControllerClue();
+    // 1. Defina o tamanho da grade (confirme se é 24x24 ou 25x24)
+    private final int totalLinhas = 25;
+    private final int totalColunas = 24;
+
+    // 2. Mude estes valores manuais até a grade vermelha encaixar nos quadrados da imagem
+    private final float propMargemEsq = 100.0f / 1350.0f;
+    private final float propMargemTop = 60.0f / 900.0f;
+
+    // 3. Mude o tamanho dos quadrados para que a grade termine onde a imagem termina
+    private final float propLarguraCasa = 48.0f / 1350.0f;
+    private final float propAlturaCasa = 31.0f / 900.0f;
+
+    // NOVO: Referência ao jogo (Controller/Model) e controle de turno
+    private JogoClueInicio jogo;
+    private String jogadorDaVez = "Srta. Rose"; // Ajuste conforme a lógica de turnos
+    private JanelaPrincipal janelaPai;
+
+    // Mapeamento dos nomes do Model para os nomes das imagens (como Scarlet virou Srta. Rose no seu Model)
+    private Map<String, String> mapeamentoNomesImagens = new HashMap<>();
+
+    // CORREÇÃO: Construtor agora recebe JogoClueInicio e JanelaPrincipal
+    public PainelTabuleiro(JogoClueInicio jogo, JanelaPrincipal janelaPai) {
+        this.jogo = jogo; // Injeta o jogo!
+        this.janelaPai = janelaPai; // Inicializa o campo corretamente
+
+        // Carrega o tabuleiro
+        try {
+            imagemTabuleiro = ImageIO.read(new File("resources/Tabuleiros/Tabuleiro-Clue-A.JPG"));
+
+            // Carrega os peões (O HashMap de nomes foi adaptado para a realidade do seu model)
+            imagensPeoes.put("Srta. Rose", ImageIO.read(new File("resources/Suspeitos/Scarlet.jpg")));
+            imagensPeoes.put("Coronel Mostarda", ImageIO.read(new File("resources/Suspeitos/Mustard.jpg")));
+            imagensPeoes.put("Professor Plum", ImageIO.read(new File("resources/Suspeitos/Plum.jpg")));
+            imagensPeoes.put("Sr. Marinho", ImageIO.read(new File("resources/Suspeitos/Green.jpg")));
+            imagensPeoes.put("Dona Violeta", ImageIO.read(new File("resources/Suspeitos/Peacock.jpg")));
+            imagensPeoes.put("Dona Branca", ImageIO.read(new File("resources/Suspeitos/White.jpg")));
+
+        } catch (IOException e) {
+            System.out.println("Erro crítico: Falha ao carregar imagens!");
+            e.printStackTrace();
         }
-        return instancia;
+
+        // Listener do mouse (A Lógica de Movimento Real)
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (passosDisponiveis <= 0) {
+                    System.out.println("Lance os dados ou defina-os antes de tentar mover!");
+                    return;
+                }
+
+                // --- AJUSTES NO MOUSE LISTENER ---
+                float margemEsq = getWidth() * propMargemEsq;
+                float margemTop = getHeight() * propMargemTop;
+                float larguraCasa = getWidth() * propLarguraCasa;
+                float alturaCasa = getHeight() * propAlturaCasa;
+
+                int colunaLogica = (int) ((e.getX() - margemEsq) / larguraCasa);
+                int linhaLogica = (int) ((e.getY() - margemTop) / alturaCasa);
+
+                // ALTERAÇÃO 2: Pega o jogador exato da vez direto do Model
+                String jogadorDaVezAtual = jogo.getJogadorDaVez();
+                System.out.println("Tentando mover " + jogadorDaVezAtual + " para [" + linhaLogica + "][" + colunaLogica + "]");
+
+                // ALTERAÇÃO 3: DELEGAÇÃO PARA O CONTROLLER!
+                // A View não dá mais ordens ao Model. Ela pede para o Controller agir!
+                boolean movimentoValido = ControllerClue.getInstancia().moverPiao(jogadorDaVezAtual, linhaLogica, colunaLogica, passosDisponiveis);
+
+                if (movimentoValido) {
+                    System.out.println("Peão movido com sucesso pelo Controller!");
+                    passosDisponiveis = 0; // Gastou a jogada
+                    // MÁGICA DO OBSERVER: Removemos o repaint() daqui!
+                    // A JanelaPrincipal é que vai dar o repaint automaticamente após ser notificada.
+                } else {
+                    System.out.println("Movimento inválido. Ignorando.");
+                }
+            }
+        });
     }
 
-    // Método para a View se registrar como ouvinte do Model
-    public void registrarObservador(Observador o) {
-        jogoFacade.adicionarObservador(o);
+    public void setPassosDisponiveis(int passos) {
+        this.passosDisponiveis = passos;
     }
 
-    // NOVO: Método atualizado para receber os personagensEscolhidos repassados pela Janela
-    public void iniciarPartida(int numJogadores, List<String> personagensSelecionados) {
-        jogoFacade.prepararPartida(numJogadores, personagensSelecionados);
+    // Metodo que permite mudar o jogador da vez quando a interface pedir
+    public void setJogadorDaVez(String jogador) {
+        this.jogadorDaVez = jogador;
     }
 
-    // Delegação de responsabilidades (O Controller pede para a Façade agir)
-    public void rolarDados(int d1, int d2) {
-        jogoFacade.setValoresDados(d1, d2);
-    }
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
-    public boolean moverPiao(String jogador, int linha, int coluna, int passos) {
-        // Agora o Controller apenas move o pião, mas NÃO rouba o turno do jogador!
-        return jogoFacade.deslocarPiao(jogador, linha, coluna, passos);
-    }
+        // Calcula os valores reais baseados no tamanho ATUAL da janela
+        float margemEsq = getWidth() * propMargemEsq;
+        float margemTop = getHeight() * propMargemTop;
+        float larguraCasa = getWidth() * propLarguraCasa;
+        float alturaCasa = getHeight() * propAlturaCasa;
 
-    // Metodo para rolar os dados aleatoriamente
-    public int[] rolarDadosAleatorios() {
-        return jogoFacade.rolarDados();
-    }
+        Graphics2D g2d = (Graphics2D) g;
 
-    // Metodo para acionar a passagem secreta do jogador da vez
-    public boolean usarPassagemSecreta(String jogador) {
-        // Move pela passagem e aguarda a ação do jogador (Palpite ou Passar a Vez)
-        return jogoFacade.moverPorPassagemSecreta(jogador);
-    }
+        if (imagemTabuleiro != null) {
+            g2d.drawImage(imagemTabuleiro, 0, 0, getWidth(), getHeight(), this);
+        }
 
-    // NOVO: Repassa a verificação se o jogador está preso do Model para a View
-    public boolean isJogadorPreso(String jogador) {
-        return jogoFacade.isJogadorPreso(jogador);
-    }
+        // LÓGICA DE RENDERIZAÇÃO DE TODOS OS PEÕES USANDO O SEU MODEL
 
-    // Metodo para acessar o encerramento do turno do jogador
-    public void encerrarTurno() {
-        jogoFacade.passarTurno();
-    }
+        // Pega todos os suspeitos ativos no seu jogo e desenha eles
+        if (jogo != null) {
+            for (String nomeSuspeito : jogo.getNomesSuspeitos()) {
 
+                int[] coords = jogo.getCoordenadasPiao(nomeSuspeito);
+                System.out.println("DEBUG PEÃO: " + nomeSuspeito + " está na coordenada " + java.util.Arrays.toString(coords));
 
-    // O Controller pede à Fachada as cartas já formatadas como texto
-    public List<String[]> obterDadosCartasDoJogadorAtual() {
-        // Chamando o nome correto do metodo que está na fachada do Model
-        return jogoFacade.obterDadosCartasDoJogadorAtual();
-    }
+                if (coords != null) {
+                    int piaoLinha = coords[0]; // X na sua lógica
+                    int piaoColuna = coords[1]; // Y na sua lógica
 
-    // Retorna a Façade para a View apenas pegar informações (getters)
-    public JogoClueInicio getModel() {
-        return jogoFacade;
-    }
-
-    // NOVO: Métodos criados para intermediar as anotações do bloco de notas entre a View e o Model
-    public void marcarNota(String jogador, String item, boolean marcado) {
-        jogoFacade.marcarNota(jogador, item, marcado);
-    }
-
-    public boolean isNotaMarcada(String jogador, String item) {
-        return jogoFacade.isNotaMarcada(jogador, item);
-    }
-
-    // Recebe o palpite da View e envia para o Model
-    public String[] fazerPalpite(String suspeito, String arma, String comodo) {
-        String jogadorAtual = jogoFacade.getJogadorDaVez();
-        return jogoFacade.realizarPalpite(jogadorAtual, suspeito, arma, comodo);
-    }
-
-    // Recebe a acusação da View e envia para o Model
-    public boolean fazerAcusacao(String suspeito, String arma, String comodo) {
-        String jogadorAtual = jogoFacade.getJogadorDaVez();
-        return jogoFacade.realizarAcusacaoFinal(jogadorAtual, suspeito, arma, comodo);
-    }
-
-    public void salvarPartida(java.io.File arquivo) {
-        jogoFacade.salvarEstado(arquivo);
-    }
-
-    public void carregarPartida(java.io.File arquivo) {
-        jogoFacade.carregarEstado(arquivo);
-    }
-
-    public static void resetarJogo() {
-        instancia = new ControllerClue(); // Recria o Singleton do zero
-    }
-
-    // Faz a ponte para a View saber em qual cômodo o jogador está
-    public String getComodoAtualJogador() {
-        return jogoFacade.getComodoAtualJogador();
+                    Image imgPiao = imagensPeoes.get(nomeSuspeito);
+                    if (imgPiao != null) {
+                        // --- AJUSTES NO PAINT COMPONENT ---
+                        int pixelX = (int) (margemEsq + (piaoColuna * larguraCasa));
+                        int pixelY = (int) (margemTop + (piaoLinha * alturaCasa));
+                        // Centraliza o peão e diminui a imagem pra não ficar esticado
+                        g2d.drawImage(imgPiao, pixelX + 2, pixelY + 2, (int)larguraCasa - 4, (int)alturaCasa - 4, this);
+                    }
+                }
+            }
+        }
     }
 }
