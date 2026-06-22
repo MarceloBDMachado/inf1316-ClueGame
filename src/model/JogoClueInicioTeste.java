@@ -29,10 +29,18 @@ public class JogoClueInicioTeste {
 
     @Test
     public void testeDistrCartas() {
+        // Criamos uma lista com todos os nomes possíveis para simular os jogadores escolhidos
+        List<String> todosPersonagens = java.util.Arrays.asList("Srta. Rose", "Coronel Mostarda", "Professor Plum", "Sr. Marinho", "Dona Violeta", "Dona Branca");
+
         for (int numJogadores = 3; numJogadores <= 6; numJogadores++) {
 
             JogoClueInicio jogoTeste = new JogoClueInicio();
-            jogoTeste.prepararPartida(numJogadores);
+
+            // Recorta a lista para ter exatamente a quantidade de jogadores do teste atual (3, 4, 5 ou 6)
+            List<String> jogadoresAtivos = todosPersonagens.subList(0, numJogadores);
+
+            // Agora chamamos o método passando o número E a lista, conforme o compilador exige
+            jogoTeste.prepararPartida(numJogadores, jogadoresAtivos);
 
             assertNotNull("ERRO: envelope vazio para " + numJogadores + " jogadores", jogoTeste.getEnvelopeConfidencial());
 
@@ -51,7 +59,6 @@ public class JogoClueInicioTeste {
             assertEquals("ERRO: total de cartas na mesa incorreto para " + numJogadores + " jogadores", 18, totalCartasDistribuidas);
         }
     }
-
     @Test
     public void testeMovimento() {
         List<Casa> casasAlcancaveis = jogo.mapearCasasPossiveis("Coronel Mostarda", 2);

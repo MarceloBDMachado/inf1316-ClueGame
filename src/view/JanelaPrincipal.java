@@ -149,22 +149,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoSalvar);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        botaoCarregar = new JButton("Carregar Partida");
-        botaoCarregar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivo de Texto (*.txt)", "txt"));
-                if (fileChooser.showOpenDialog(JanelaPrincipal.this) == JFileChooser.APPROVE_OPTION) {
-                    controller.carregarPartida(fileChooser.getSelectedFile());
-                    JOptionPane.showMessageDialog(JanelaPrincipal.this, "Jogo carregado com sucesso!");
-                }
-            }
-        });
-        painelLateral.add(botaoCarregar);
-        painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
-        // ==========================================
-
         // Botão para o bloco de notas interativo
         JButton botaoNotas = new JButton("Bloco de Notas");
         botaoNotas.addActionListener(new ActionListener() {
@@ -238,7 +222,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
                     botaoRolarSorte.setEnabled(false);
                     botaoDadosTeste.setEnabled(false);
                     botaoPassagem.setEnabled(false);
-
                     painelTabuleiro.setPassosDisponiveis(0);
                     JOptionPane.showMessageDialog(JanelaPrincipal.this,
                             jogadorAtual + " utilizou com sucesso as passagens secretas da mansão!",
@@ -354,7 +337,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoPassarVez);
 
         // NOVO: Nova cor chamativa (Laranja Escuro) aplicada no botão de acusação para se destacar do fundo inteiro colorido
-        botaoAcusacao.setBackground(new Color(255, 128, 0)); // Laranja forte
+        botaoAcusacao.setBackground(new Color(255, 0, 0)); // Laranja forte
         botaoAcusacao.setForeground(Color.WHITE);
 
         botaoAcusacao.addActionListener(new ActionListener() {
