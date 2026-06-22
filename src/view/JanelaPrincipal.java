@@ -66,18 +66,16 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelTabuleiro = new PainelTabuleiro(partida, this);
         add(new JScrollPane(painelTabuleiro), BorderLayout.CENTER);
 
-        // NOVO: Usa a variável de classe instanciada, configurando o painel inteiro
         painelLateral = new JPanel();
         painelLateral.setLayout(new BoxLayout(painelLateral, BoxLayout.Y_AXIS));
         painelLateral.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         painelLateral.setPreferredSize(new Dimension(250, 900));
-        // NOVO: Garante que o painel pinta o seu fundo
         painelLateral.setOpaque(true);
 
         // Título que indica o jogador da vez
         labelJogador = new JLabel();
-        labelJogador.setFont(new Font("Arial", Font.BOLD, 18)); // NOVO: Aumentei um pouco a fonte para destaque
-        labelJogador.setForeground(Color.BLACK); // NOVO: Mudei para preto pois o fundo inteiro agora será colorido
+        labelJogador.setFont(new Font("Arial", Font.BOLD, 18));
+        labelJogador.setForeground(Color.BLACK);
         painelLateral.add(labelJogador);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 20)));
 
@@ -99,7 +97,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         labelImagemDado1 = new JLabel();
         labelImagemDado2 = new JLabel();
         painelDadosImagens = new JPanel(new FlowLayout());
-        // NOVO: Agora que o painelLateral inteiro será colorido, o painelDadosImagens deve ser transparente
         painelDadosImagens.setOpaque(false);
         painelDadosImagens.add(labelImagemDado1);
         painelDadosImagens.add(labelImagemDado2);
@@ -126,7 +123,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
-                // Regra do professor: Apenas o filetype pode ser pré-definido
+                // Apenas o filetype pode ser pré-definido
                 fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Arquivo de Texto (*.txt)", "txt"));
                 if (fileChooser.showSaveDialog(JanelaPrincipal.this) == JFileChooser.APPROVE_OPTION) {
                     File arquivo = fileChooser.getSelectedFile();
@@ -141,7 +138,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoSalvar);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Botão para o bloco de notas interativo
         JButton botaoNotas = new JButton("Bloco de Notas");
         botaoNotas.addActionListener(new ActionListener() {
             @Override
@@ -169,7 +165,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
                 painelTabuleiro.setPassosDisponiveis(totalPassos);
                 atualizarImagensDosDados(d1, d2);
 
-                // REGRA DA 4ª ITERAÇÃO: Desabilita salvar após rolar dados
+                // Desabilita salvar após rolar dados
                 botaoSalvar.setEnabled(false);
             }
         });
@@ -194,7 +190,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
 
                 controller.rolarDados(d1, d2);
 
-                // REGRA DA 4ª ITERAÇÃO: Desabilita salvar após forçar os dados
+                // Desabilita salvar após forçar os dados
                 botaoSalvar.setEnabled(false);
             }
         });
@@ -240,7 +236,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
                 JComboBox<String> comboSuspeitos = new JComboBox<>(partida.getNomesSuspeitos().toArray(new String[0]));
                 JComboBox<String> comboArmas = new JComboBox<>(partida.getNomesArmas().toArray(new String[0]));
 
-                // O JOptionPane agora tem um JLabel (texto fixo) para o cômodo em vez de combo box
                 Object[] mensagem = {
                         "Qual suspeito você sugere?", comboSuspeitos,
                         "Com qual arma?", comboArmas,
@@ -263,7 +258,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
                         return;
                     }
 
-                    // NOVO: Registra o palpite, trava as opções de movimento e força o jogador a passar a vez
+                    // Ao registrar o palpite, trava as opções de movimento e força o jogador a passar a vez
                     jaDeuPalpiteNesteTurno = true;
                     jaMoveuNesteTurno = true;
                     botaoRolarSorte.setEnabled(false);
@@ -297,23 +292,21 @@ public class JanelaPrincipal extends JFrame implements Observador {
         botaoPassarVez.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // NOVO: Validação das regras para permitir passar a vez (Andou tudo, Deu Palpite ou Está Preso)
                 boolean terminouMovimento = jaMoveuNesteTurno && painelTabuleiro.getPassosDisponiveis() == 0;
                 boolean preso = controller.isJogadorPreso(partida.getJogadorDaVez());
 
                 if (terminouMovimento || jaDeuPalpiteNesteTurno || preso) {
                     painelTabuleiro.setPassosDisponiveis(0);
                     jaMoveuNesteTurno = false;
-                    jaDeuPalpiteNesteTurno = false; // NOVO: Reseta a trava do palpite para o próximo jogador
+                    jaDeuPalpiteNesteTurno = false;
 
-                    // Manda reativar os botões de rolagem para o próximo da fila
+                    // Reativa os botões de rolagem para o próximo da fila
                     botaoRolarSorte.setEnabled(true);
                     botaoDadosTeste.setEnabled(true);
                     botaoPassagem.setEnabled(true);
 
                     controller.encerrarTurno();
                 } else {
-                    // NOVO: Mensagens de erro explicativas dependendo de onde o jogador travou
                     if (jaMoveuNesteTurno && painelTabuleiro.getPassosDisponiveis() > 0) {
                         JOptionPane.showMessageDialog(JanelaPrincipal.this,
                                 "Você rolou os dados e ainda tem passos disponíveis. Clique no tabuleiro para se mover!",
@@ -328,7 +321,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         });
         painelLateral.add(botaoPassarVez);
 
-        // NOVO: Nova cor chamativa (Laranja Escuro) aplicada no botão de acusação para se destacar do fundo inteiro colorido
         botaoAcusacao.setBackground(new Color(255, 0, 0)); // Laranja forte
         botaoAcusacao.setForeground(Color.WHITE);
 
@@ -355,14 +347,14 @@ public class JanelaPrincipal extends JFrame implements Observador {
                     boolean venceu = controller.fazerAcusacao(suspeito, arma, comodo);
 
                     if (venceu) {
-                        // REGRA DA 4ª ITERAÇÃO: Término de Partida e Loop Principal
+                        // Término de Partida e Loop Principal
                         int resposta = JOptionPane.showConfirmDialog(JanelaPrincipal.this,
                                 "PARABÉNS! Descobriu o assassino e VENCEU o jogo!\nO crime foi cometido por " + suspeito + " com o/a " + arma + " no/na " + comodo + ".\n\nDeseja jogar novamente?",
                                 "Fim de Partida - Acusação Correta", JOptionPane.YES_NO_OPTION);
 
                         if (resposta == JOptionPane.YES_OPTION) {
                             ControllerClue.resetarJogo(); // Zera o Singleton
-                            // Cumprindo a regra do PDF para reabrir a janela de seleção diretamente
+                            // Reabri a janela de seleção diretamente
                             JanelaInicio menu = new JanelaInicio();
                             menu.iniciarFluxoNovoJogo();
                             dispose(); // Fecha o tabuleiro atual
@@ -383,7 +375,7 @@ public class JanelaPrincipal extends JFrame implements Observador {
         add(painelLateral, BorderLayout.EAST);
     }
 
-    // A assinatura mudou para receber os personagens selecionados e enviar ao controller
+    // Recebe os personagens selecionados e envia ao controller
     public void iniciarPartidaComJogadores(int n, List<String> personagensSelecionados) {
         controller.iniciarPartida(n, personagensSelecionados);
         atualizarTurnoVisual();
@@ -399,25 +391,22 @@ public class JanelaPrincipal extends JFrame implements Observador {
     public void atualizarTurnoVisual() {
         String jogador = partida.getJogadorDaVez();
         labelJogador.setText("Vez de: " + jogador);
-
-        // NOVO: Agora a cor de fundo é aplicada no painelLateral INTEIRO!
+        
         painelLateral.setBackground(obterCorDoJogador(jogador));
-
-        // NOVO: Redesenha o painel inteiro
         painelLateral.repaint();
 
-        // 1. Reabilita o botão de salvar no início de um novo turno
+        // Reabilita o botão de salvar no início de um novo turno
         if (botaoSalvar != null) {
             botaoSalvar.setEnabled(!jaMoveuNesteTurno);
         }
 
-        // 2. Trava o botão de Palpite se o jogador estiver no corredor
+        // Trava o botão de Palpite se o jogador estiver no corredor
         String comodoAtual = controller.getComodoAtualJogador();
         if (botaoPalpite != null) {
             botaoPalpite.setEnabled(comodoAtual != null); // Só ativa se estiver num quarto!
         }
 
-        // 3. Garante o reset visual dos botões de movimento no início de cada turno
+        // Garante o reset visual dos botões de movimento no início de cada turno
         if (!jaMoveuNesteTurno) {
             if (botaoRolarSorte != null) botaoRolarSorte.setEnabled(true);
             if (botaoDadosTeste != null) botaoDadosTeste.setEnabled(true);
@@ -425,8 +414,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         }
     }
 
-    // NOVO: Atualizado os valores RGB para tons mais "pastéis/claros".
-    // Assim, o texto preto e os botões continuam legíveis na barra lateral inteira.
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
             case "Srta. Rose":
