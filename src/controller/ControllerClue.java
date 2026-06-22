@@ -22,51 +22,43 @@ public class ControllerClue {
         return instancia;
     }
 
-    // Método para a View se registrar como ouvinte do Model
     public void registrarObservador(Observador o) {
         jogoFacade.adicionarObservador(o);
     }
 
-    // NOVO: Método atualizado para receber os personagensEscolhidos repassados pela Janela
     public void iniciarPartida(int numJogadores, List<String> personagensSelecionados) {
         jogoFacade.prepararPartida(numJogadores, personagensSelecionados);
     }
 
-    // Delegação de responsabilidades (O Controller pede para a Façade agir)
     public void rolarDados(int d1, int d2) {
         jogoFacade.setValoresDados(d1, d2);
     }
 
     public boolean moverPiao(String jogador, int linha, int coluna, int passos) {
-        // Agora o Controller apenas move o pião, mas NÃO rouba o turno do jogador!
         return jogoFacade.deslocarPiao(jogador, linha, coluna, passos);
     }
 
-    // Metodo para rolar os dados aleatoriamente
     public int[] rolarDadosAleatorios() {
         return jogoFacade.rolarDados();
     }
 
-    // Metodo para acionar a passagem secreta do jogador da vez
     public boolean usarPassagemSecreta(String jogador) {
         // Move pela passagem e aguarda a ação do jogador (Palpite ou Passar a Vez)
         return jogoFacade.moverPorPassagemSecreta(jogador);
     }
 
-    // NOVO: Repassa a verificação se o jogador está preso do Model para a View
+    // passa a verificação se o jogador está preso do Model para a View
     public boolean isJogadorPreso(String jogador) {
-        return jogoFacade.isJogadorPreso(jogador);
+        return jogoFacade.jogadorPreso(jogador);
     }
 
-    // Metodo para acessar o encerramento do turno do jogador
     public void encerrarTurno() {
         jogoFacade.passarTurno();
     }
 
 
-    // O Controller pede à Fachada as cartas já formatadas como texto
+    // O Controller pede as cartas já formatadas como texto
     public List<String[]> obterDadosCartasDoJogadorAtual() {
-        // Chamando o nome correto do metodo que está na fachada do Model
         return jogoFacade.obterDadosCartasDoJogadorAtual();
     }
 
@@ -75,7 +67,7 @@ public class ControllerClue {
         return jogoFacade;
     }
 
-    // NOVO: Métodos criados para intermediar as anotações do bloco de notas entre a View e o Model
+    // intermedia as anotações do bloco de notas entre a View e o Model
     public void marcarNota(String jogador, String item, boolean marcado) {
         jogoFacade.marcarNota(jogador, item, marcado);
     }
@@ -104,8 +96,9 @@ public class ControllerClue {
         jogoFacade.carregarEstado(arquivo);
     }
 
+    // Recria o Singleton do zero
     public static void resetarJogo() {
-        instancia = new ControllerClue(); // Recria o Singleton do zero
+        instancia = new ControllerClue(); 
     }
 
     // Faz a ponte para a View saber em qual cômodo o jogador está
