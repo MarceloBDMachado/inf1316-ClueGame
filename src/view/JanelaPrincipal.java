@@ -38,7 +38,10 @@ public class JanelaPrincipal extends JFrame implements Observador {
     private JButton botaoRolarSorte;
     private JButton botaoDadosTeste;
     private JButton botaoPassagem;
+
     private boolean jaMoveuNesteTurno = false;
+    // NOVO: Flag para rastrear se o jogador fez uma sugestão neste turno
+    private boolean jaDeuPalpiteNesteTurno = false;
 
     // ALTERAÇÃO 2: A View agora tem uma referência para o Controller
     private ControllerClue controller;
@@ -285,6 +288,15 @@ public class JanelaPrincipal extends JFrame implements Observador {
                         return;
                     }
 
+                    // NOVO: Registra o palpite, trava as opções de movimento e força o jogador a passar a vez
+                    jaDeuPalpiteNesteTurno = true;
+                    jaMoveuNesteTurno = true;
+                    botaoRolarSorte.setEnabled(false);
+                    botaoDadosTeste.setEnabled(false);
+                    botaoPassagem.setEnabled(false);
+                    botaoSalvar.setEnabled(false);
+                    painelTabuleiro.setPassosDisponiveis(0);
+
                     if (refutacao != null) {
                         JOptionPane.showMessageDialog(JanelaPrincipal.this,
                                 "O detetive " + refutacao[2] + " desmentiu a sua teoria e mostrou a carta:\n\n" + refutacao[0] + " (" + refutacao[1] + ")",
@@ -310,15 +322,33 @@ public class JanelaPrincipal extends JFrame implements Observador {
         botaoPassarVez.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                painelTabuleiro.setPassosDisponiveis(0);
-                jaMoveuNesteTurno = false; // Reseta a trava para o próximo jogador
+                // NOVO: Validação das regras para permitir passar a vez (Andou tudo, Deu Palpite ou Está Preso)
+                boolean terminouMovimento = jaMoveuNesteTurno && painelTabuleiro.getPassosDisponiveis() == 0;
+                boolean preso = controller.isJogadorPreso(partida.getJogadorDaVez());
 
-                // Manda reativar os botões de rolagem para o próximo da fila
-                botaoRolarSorte.setEnabled(true);
-                botaoDadosTeste.setEnabled(true);
-                botaoPassagem.setEnabled(true);
+                if (terminouMovimento || jaDeuPalpiteNesteTurno || preso) {
+                    painelTabuleiro.setPassosDisponiveis(0);
+                    jaMoveuNesteTurno = false;
+                    jaDeuPalpiteNesteTurno = false; // NOVO: Reseta a trava do palpite para o próximo jogador
 
-                controller.encerrarTurno();
+                    // Manda reativar os botões de rolagem para o próximo da fila
+                    botaoRolarSorte.setEnabled(true);
+                    botaoDadosTeste.setEnabled(true);
+                    botaoPassagem.setEnabled(true);
+
+                    controller.encerrarTurno();
+                } else {
+                    // NOVO: Mensagens de erro explicativas dependendo de onde o jogador travou
+                    if (jaMoveuNesteTurno && painelTabuleiro.getPassosDisponiveis() > 0) {
+                        JOptionPane.showMessageDialog(JanelaPrincipal.this,
+                                "Você rolou os dados e ainda tem passos disponíveis. Clique no tabuleiro para se mover!",
+                                "Movimento Pendente", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(JanelaPrincipal.this,
+                                "Ação Inválida! Para passar a vez, você deve se mover, dar um palpite ou estar com as saídas bloqueadas.",
+                                "Bloqueio de Turno", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
             }
         });
         painelLateral.add(botaoPassarVez);
