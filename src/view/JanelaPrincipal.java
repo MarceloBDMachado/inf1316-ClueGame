@@ -115,9 +115,6 @@ public class JanelaPrincipal extends JFrame implements Observador {
         painelLateral.add(botaoCartas);
         painelLateral.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // ==========================================
-        // NOVOS BOTÕES DA 4ª ITERAÇÃO: SALVAR E CARREGAR
-        // ==========================================
         botaoSalvar = new JButton("Salvar Partida");
         botaoSalvar.addActionListener(new ActionListener() {
             @Override
@@ -417,17 +414,17 @@ public class JanelaPrincipal extends JFrame implements Observador {
     private Color obterCorDoJogador(String nomeJogador) {
         switch (nomeJogador) {
             case "Srta. Rose":
-                return new Color(255, 104, 104); // Rosa Claro / Vermelho Pastel
+                return new Color(255, 104, 104);
             case "Coronel Mostarda":
-                return new Color(255, 255, 153); // Amarelo Pastel
+                return new Color(255, 255, 153);
             case "Professor Plum":
-                return new Color(214, 122, 244); // Roxo Pastel / Thistle
+                return new Color(214, 122, 244);
             case "Sr. Marinho":
-                return new Color(152, 251, 152); // Verde Claro Pastel
+                return new Color(152, 251, 152);
             case "Dona Violeta":
-                return new Color(173, 216, 230); // Azul Claro Pastel
+                return new Color(173, 216, 230);
             case "Dona Branca":
-                return new Color(245, 245, 245); // Branco Gelo / Off-white
+                return new Color(245, 245, 245);
             default:
                 return Color.LIGHT_GRAY;
         }
