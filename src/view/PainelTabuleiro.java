@@ -102,6 +102,11 @@ public class PainelTabuleiro extends JPanel {
         this.passosDisponiveis = passos;
     }
 
+    // NOVO: Metodo para a View conseguir consultar se o jogador já terminou de gastar seus passos no mapa
+    public int getPassosDisponiveis() {
+        return this.passosDisponiveis;
+    }
+
     // Metodo que permite mudar o jogador da vez quando a interface pedir
     public void setJogadorDaVez(String jogador) {
         this.jogadorDaVez = jogador;
@@ -130,7 +135,6 @@ public class PainelTabuleiro extends JPanel {
             for (String nomeSuspeito : jogo.getNomesSuspeitos()) {
 
                 int[] coords = jogo.getCoordenadasPiao(nomeSuspeito);
-                System.out.println("DEBUG PEÃO: " + nomeSuspeito + " está na coordenada " + java.util.Arrays.toString(coords));
 
                 if (coords != null) {
                     int piaoLinha = coords[0]; // X na sua lógica

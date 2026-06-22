@@ -53,6 +53,11 @@ public class ControllerClue {
         return jogoFacade.moverPorPassagemSecreta(jogador);
     }
 
+    // NOVO: Repassa a verificação se o jogador está preso do Model para a View
+    public boolean isJogadorPreso(String jogador) {
+        return jogoFacade.isJogadorPreso(jogador);
+    }
+
     // Metodo para acessar o encerramento do turno do jogador
     public void encerrarTurno() {
         jogoFacade.passarTurno();
