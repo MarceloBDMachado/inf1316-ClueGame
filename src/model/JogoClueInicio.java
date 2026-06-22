@@ -118,6 +118,25 @@ public class JogoClueInicio implements Observado {
         return false;
     }
 
+    // NOVO: Verifica se o jogador está preso em um cômodo com as portas bloqueadas pelos oponentes
+    public boolean isJogadorPreso(String nomeJogador) {
+        Piao p = pioes.get(nomeJogador);
+        if (p == null || p.getPosicaoAtual() == null) return false;
+        Casa origem = p.getPosicaoAtual();
+
+        if (origem.getTipo() == TipoCasa.COMODO || origem.getTipo() == TipoCasa.PORTA) {
+            // Usa o próprio algoritmo do tabuleiro para tentar dar 1 passo para fora do quarto
+            List<Casa> alcancaveis = tabuleiro.mapearCasasAlcancaveis(origem, 1);
+            for (Casa c : alcancaveis) {
+                if (c.getTipo() == TipoCasa.CORREDOR) {
+                    return false; // Consegue acessar o corredor livremente, não está preso
+                }
+            }
+            return true; // Preso! Nenhuma saída para o corredor adjacente está livre
+        }
+        return false; // Se estiver no corredor, não se aplica a regra de "preso numa sala"
+    }
+
     // NOVO: Adicionado parametro para a lista de personagens selecionados e injetando neles
     public void prepararPartida(int numJogadores, List<String> personagensSelecionados) {
         if(numJogadores < 3 || numJogadores > 6) {
